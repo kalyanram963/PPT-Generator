@@ -1,17 +1,16 @@
 /* global __firebase_config, __initial_auth_token, __app_id, firebase, jsPDF, html2canvas, PptxGenJS */
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import "./styles/App.css";
 import "./styles/animations.css";
-import "./components/SlidePreview.css"; // Ensure SlidePreview.css is imported for its styles
-import "./styles/WelcomePage.css"; // Import the new WelcomePage CSS
+import "./components/SlidePreview.css";
+import "./styles/WelcomePage.css";
 
 import SlidePreview from "./components/SlidePreview";
 import SlideThumbnail from "./components/SlideThumbnail";
 import Loader from "./components/Loader";
 import templates from "./components/templates";
 import CustomModal from "./components/CustomModal";
-import WelcomePage from "./components/WelcomePage"; // Import the new WelcomePage component
+import WelcomePage from "./components/WelcomePage";
 
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -20,29 +19,26 @@ import PptxGenJS from 'pptxgenjs';
 // Firebase imports
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
 
-// Global variables provided by the Canvas environment (ESLint ignore added at top of file)
+// Global variables provided by the Canvas environment
 const firebaseConfig = typeof __firebase_config !== 'undefined' ?
   JSON.parse(__firebase_config) :
   {
-    apiKey: "AIzaSyBxS4mHXP_4eFAgs_ZYRDZTAdtD4wj_g6Q", // Your actual API Key
-    authDomain: "ai-ppt-generator-project-27b39.firebaseapp.com", // Your actual Auth Domain
-    projectId: "ai-ppt-generator-project-27b39", // Your actual Project ID
-    storageBucket: "ai-ppt-generator-project-27b39.firebasestorage.app", // Your actual Storage Bucket
-    messagingSenderId: "138509839503", // Your actual Messaging Sender Id
-    appId: "1:138509839503:web:3d76c2f4eea4fb44c014fa", // Your actual App Id
-    measurementId: "G-VGL8KDQX7P" // Your actual Measurement Id (optional)
+    apiKey: "AIzaSyBxS4mHXP_4eFAgs_ZYRDZTAdtD4wj_g6Q",
+    authDomain: "ai-ppt-generator-project-27b39.firebaseapp.com",
+    projectId: "ai-ppt-generator-project-27b39",
+    storageBucket: "ai-ppt-generator-project-27b39.firebasestorage.app",
+    messagingSenderId: "138509839503",
+    appId: "1:138509839503:web:3d76c2f4eea4fb44c014fa",
+    measurementId: "G-VGL8KDQX7P"
   };
 
 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 function App() {
-  // State for welcome page display
-  const [showWelcomePage, setShowWelcomePage] = useState(true); // NEW: State to control welcome page visibility
-
-  // State for presentation logic
+  const [showWelcomePage, setShowWelcomePage] = useState(true);
   const [topic, setTopic] = useState("");
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -51,52 +47,42 @@ function App() {
     templates && templates.length > 0 ? templates[0].id : ''
   );
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [mode, setMode] = useState('auto-generate'); // 'auto-generate' or 'customize'
+  const [mode, setMode] = useState('auto-generate');
 
-  // State to track which slide is being edited directly
   const [editingSlideId, setEditingSlideId] = useState(null);
-  // Local state to hold changes for the currently edited slide's elements
   const [tempSlideElements, setTempSlideElements] = useState([]);
 
-  // State for PPT Summary
   const [pptSummary, setPptSummary] = useState('');
   const [showSummarySection, setShowSummarySection] = useState(false);
 
-  // State for Speech Synthesis
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null); // Ref to store the SpeechSynthesisUtterance object
+  const utteranceRef = useRef(null);
   const [availableVoices, setAvailableVoices] = useState([]);
   const [selectedVoice, setSelectedVoice] = useState(null);
 
-  // State for Firebase
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
-  // State for Custom Modal
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [modalType, setModalType] = useState('info');
   const [modalCallback, setModalCallback] = useState(null);
   const [modalInput, setModalInput] = useState('');
 
-  // Ref for the main slide display area to capture for PDF
   const mainSlidesDisplayAreaRef = useRef(null);
 
-  // Derive the active template object based on selectedTemplateId
   const activeTemplate = templates.find(t => t.id === selectedTemplateId);
 
-  // Function to show a custom modal message
   const showCustomModal = (message, type = 'info', callback = null, initialValue = '') => {
     setModalMessage(message);
     setModalType(type);
-    setModalCallback(() => callback || (() => {})); // Ensure callback is always a function
+    setModalCallback(() => callback || (() => {}));
     setModalInput(initialValue);
     setShowModal(true);
   };
 
-  // Helper function to resolve CSS variables (re-introduced for PDF/PPTX export)
   const getStyleValue = (cssVar) => {
     if (cssVar && cssVar.startsWith('var(')) {
       const varName = cssVar.replace('var(', '').replace(')', '').trim();
@@ -105,49 +91,43 @@ function App() {
     return cssVar;
   };
 
-  // Speech Synthesis Functions
   useEffect(() => {
-    // Function to load voices
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
       setAvailableVoices(voices);
-      // Try to set a default English voice if available
       const defaultEnglishVoice = voices.find(
         (voice) => voice.lang === 'en-US' || voice.lang.startsWith('en-')
       );
       if (defaultEnglishVoice) {
         setSelectedVoice(defaultEnglishVoice);
       } else if (voices.length > 0) {
-        setSelectedVoice(voices[0]); // Fallback to first available voice
+        setSelectedVoice(voices[0]);
       }
     };
 
-    // Load voices immediately if they are already available
     if (speechSynthesis.getVoices().length > 0) {
       loadVoices();
     } else {
-      // Otherwise, wait for the 'voiceschanged' event
       speechSynthesis.onvoiceschanged = loadVoices;
     }
 
     return () => {
-      speechSynthesis.onvoiceschanged = null; // Clean up event listener
+      speechSynthesis.onvoiceschanged = null;
     };
   }, []);
 
-
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
-      stopSpeaking(); // Stop any current speech before starting new one
+      stopSpeaking();
       const utterance = new SpeechSynthesisUtterance(text);
 
       if (selectedVoice) {
         utterance.voice = selectedVoice;
       } else {
-        utterance.lang = 'en-US'; // Fallback language
+        utterance.lang = 'en-US';
       }
-      utterance.rate = 1.0; // Speed of speech
-      utterance.pitch = 1.0; // Pitch of speech
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
@@ -162,7 +142,7 @@ function App() {
       };
 
       speechSynthesis.speak(utterance);
-      utteranceRef.current = utterance; // Store utterance object for potential stopping
+      utteranceRef.current = utterance;
     } else {
       showCustomModal("Text-to-speech is not supported in your browser.", 'info');
     }
@@ -176,14 +156,12 @@ function App() {
     }
   };
 
-  // Clean up speech synthesis on component unmount
   useEffect(() => {
     return () => {
-      stopSpeaking(); // Ensure speech is stopped when component unmounts
+      stopSpeaking();
     };
   }, []);
 
-  // Effect hook for Firebase initialization and authentication
   useEffect(() => {
     const initializeFirebase = async () => {
       try {
@@ -239,7 +217,6 @@ function App() {
     initializeFirebase();
   }, []);
 
-  // Effect hook for fetching slides from Firestore
   useEffect(() => {
     if (db && userId && isAuthReady) {
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
@@ -248,20 +225,17 @@ function App() {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const fetchedSlides = snapshot.docs.map(doc => {
           const data = doc.data();
-          // Ensure every slide has an 'elements' array, providing a fallback for old data
           if (!data.elements) {
-            // This is an old slide, create default elements based on old fields
             const defaultElements = [
               { id: 'title-' + doc.id, type: 'title', content: data.title || "Untitled Slide", x: '5%', y: '5%', width: '90%', height: 'auto' },
-              { id: 'bullets-' + doc.id, type: 'bullet-points', content: Array.isArray(data.content) ? data.content : (data.content ? String(data.content).split('\n') : []), x: '10%', y: '20%', width: '80%', height: 'auto' }, // height: 'auto'
+              { id: 'bullets-' + doc.id, type: 'bullet-points', content: Array.isArray(data.content) ? data.content : (data.content ? String(data.content).split('\n') : []), x: '10%', y: '20%', width: '80%', height: 'auto' },
             ];
-            // Only add image element if imageUrl exists in old data
             if (data.imageUrl) {
-              defaultElements.push({ id: 'image-' + doc.id, type: 'image', imagePrompt: data.imagePrompt || "", src: data.imageUrl, x: '5%', y: '45%', width: '90%', height: '45%' }); // Set explicit height
+              defaultElements.push({ id: 'image-' + doc.id, type: 'image', imagePrompt: data.imagePrompt || "", src: data.imageUrl, x: '5%', y: '45%', width: '90%', height: '45%' });
             }
             return {
               id: doc.id,
-              ...data, // Keep other existing fields if any
+              ...data,
               elements: defaultElements,
             };
           }
@@ -287,14 +261,11 @@ function App() {
     }
   }, [db, userId, isAuthReady, currentSlideIndex]);
 
-  // Effect hook to apply template-specific CSS variables to the document body
   useEffect(() => {
     if (activeTemplate && activeTemplate.colors) {
       for (const key in activeTemplate.colors) {
         document.documentElement.style.setProperty(key, activeTemplate.colors[key]);
       }
-      // Also set CSS variables for the template card preview (used by template gallery)
-      // These are no longer directly used by TemplateCard, but might be useful for other previews
       document.documentElement.style.setProperty('--template-card-background', activeTemplate.styles.slideBackground);
       document.documentElement.style.setProperty('--template-card-border', activeTemplate.styles.borderColor);
       document.documentElement.style.setProperty('--template-card-shadow', activeTemplate.styles.boxShadow);
@@ -302,10 +273,6 @@ function App() {
     }
   }, [activeTemplate]);
 
-  /**
-   * Asynchronously generates presentation slides by calling the Gemini API.
-   * Stores the generated slides in Firestore.
-   */
   const generateSlides = async () => {
     if (!topic.trim()) {
       showCustomModal("Please enter a topic to generate slides.", 'info');
@@ -317,15 +284,15 @@ function App() {
       return;
     }
 
-    setLoading(true); // Start overall loading
+    setLoading(true);
 
     if (slides.length > 0) {
       showCustomModal("Generating new slides will replace existing ones. Continue?", 'confirm', async (confirmed) => {
         if (confirmed) {
-          await clearAllSlides(); // Clear existing slides from Firestore
-          await fetchAndSaveSlidesOutlineAndImages(); // Then fetch and save new ones + images
+          await clearAllSlides();
+          await fetchAndSaveSlidesOutlineAndImages();
         } else {
-          setLoading(false); // Stop loading if cancelled
+          setLoading(false);
         }
       });
     } else {
@@ -333,10 +300,9 @@ function App() {
     }
   };
 
-  // Helper function to fetch slides outline from Gemini AND generate images
   const fetchAndSaveSlidesOutlineAndImages = async () => {
     try {
-      const geminiApiKey = "AIzaSyAJU8gPvh7bmNEw8CBJNUp6lIAMe4AC2Sg"; // YOUR GEMINI API KEY HERE
+      const geminiApiKey = "AIzaSyAJU8gPvh7bmNEw8CBJNUp6lIAMe4AC2Sg";
       const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
 
       const geminiPayload = {
@@ -367,9 +333,9 @@ function App() {
                   "type": "ARRAY",
                   "items": { "type": "STRING" }
                 },
-                "imagePrompt": { "type": "STRING" } // New field for image prompt
+                "imagePrompt": { "type": "STRING" }
               },
-              "propertyOrdering": ["title", "content", "imagePrompt"] // Ensure order
+              "propertyOrdering": ["title", "content", "imagePrompt"]
             }
           }
         }
@@ -394,13 +360,12 @@ function App() {
       const geminiResult = await geminiResponse.json();
       console.log("Gemini Parsed JSON Result:", geminiResult);
 
-
       let parsedSlides = [];
       if (geminiResult.candidates && geminiResult.candidates.length > 0 &&
           geminiResult.candidates[0].content && geminiResult.candidates[0].content.parts &&
           geminiResult.candidates[0].content.parts.length > 0) {
         const rawJsonText = geminiResult.candidates[0].content.parts[0].text;
-        console.log("Raw Gemini Response (for slides & image prompts):", rawJsonText); // DEBUG: Log raw response
+        console.log("Raw Gemini Response (for slides & image prompts):", rawJsonText);
         try {
           parsedSlides = JSON.parse(rawJsonText);
           if (!Array.isArray(parsedSlides) || parsedSlides.some(slide => !slide.title || !slide.content)) {
@@ -423,36 +388,28 @@ function App() {
         return;
       }
 
-      // Clear existing slides from Firestore before saving new ones
       await clearAllSlides();
 
-      // Store slides temporarily to generate images
       const slidesToProcess = [];
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
 
       for (const slide of parsedSlides) {
         const contentArray = Array.isArray(slide.content) ? slide.content : String(slide.content || '').split('\n');
         const docRef = await addDoc(slidesCollectionRef, {
-          // NEW DATA MODEL: Store elements instead of separate fields
           elements: [
-            // Giving more vertical space and ensuring height: 'auto'
             { id: 'title-' + Date.now(), type: 'title', content: slide.title || "Untitled Slide", x: '5%', y: '5%', width: '90%', height: 'auto' },
-            { id: 'bullets-' + Date.now(), type: 'bullet-points', content: contentArray, x: '10%', y: '20%', width: '80%', height: 'auto' }, // Started higher, with auto height
-            { id: 'image-' + Date.now(), type: 'image', imagePrompt: slide.imagePrompt || "", src: null, x: '5%', y: '45%', width: '90%', height: '45%' } // Set explicit height
+            { id: 'bullets-' + Date.now(), type: 'bullet-points', content: contentArray, x: '10%', y: '20%', width: '80%', height: 'auto' },
+            { id: 'image-' + Date.now(), type: 'image', imagePrompt: slide.imagePrompt || "", src: null, x: '5%', y: '45%', width: '90%', height: '45%' }
           ],
           timestamp: new Date(),
         });
-        slidesToProcess.push({ id: docRef.id, ...slide, content: contentArray }); // Keep old structure for image generation loop
+        slidesToProcess.push({ id: docRef.id, ...slide, content: contentArray });
       }
 
-      // Now, generate images for each slide using Pexels API
-      // Use Promise.allSettled to allow some image generations to fail without stopping others
       const imageGenerationPromises = slidesToProcess.map(async (slide) => {
         try {
           const imageUrl = await generateImageForSlide(slide.id, slide.title, slide.content, slide.imagePrompt);
-          // Update the slide in Firestore with the generated image URL
           if (imageUrl && db && userId) {
-            // Find the image element and update its src
             const slideDocRef = doc(db, `artifacts/${appId}/users/${userId}/slides`, slide.id);
             const currentSlideData = (await getDoc(slideDocRef)).data();
             const updatedElements = currentSlideData.elements.map(el =>
@@ -464,15 +421,13 @@ function App() {
           }
         } catch (imageError) {
           console.error(`Error generating image for slide ${slide.id}:`, imageError);
-          // Optionally show a modal for each failed image, or collect errors
-          // showCustomModal(`Failed to generate image for slide "${slide.title}": ${imageError.message}`, 'error');
         }
       });
 
-      await Promise.allSettled(imageGenerationPromises); // Wait for all image generations to complete
+      await Promise.allSettled(imageGenerationPromises);
 
       showCustomModal('Presentation generated and images processed!', 'info');
-      setCurrentSlideIndex(0); // Reset to first slide after generation
+      setCurrentSlideIndex(0);
 
     } catch (error) {
       console.error("Error during slide generation/saving:", error);
@@ -485,25 +440,23 @@ function App() {
         showCustomModal(`❌ An unexpected error occurred: ${error.message}`, 'error');
       }
     } finally {
-      setLoading(false); // End overall loading
+      setLoading(false);
     }
   };
 
-  // Refactored function to generate image for a specific slide using Pexels API
   const generateImageForSlide = async (slideId, slideTitle, slideContentArray, imagePrompt) => {
     try {
-      const pexelsApiKey = "wFOYZBCfPQpZJe6f61GqizDZ2F59lR0KmL0l4HuVptdxftB9P8pZsa4m"; // YOUR PEXELS API KEY HERE
-      // Use the imagePrompt provided by Gemini, or fall back to a generic one
+      const pexelsApiKey = "wFOYZBCfPQpZJe6f61GqizDZ2F59lR0KmL0l4HuVptdxftB9P8pZsa4m";
       const queryText = encodeURIComponent(imagePrompt || slideTitle);
       const pexelsApiUrl = `https://api.pexels.com/v1/search?query=${queryText}&per_page=1`;
 
       console.log(`Sending Pexels request for slide ${slideId} with prompt: "${queryText}"`);
 
       const pexelsResponse = await fetch(pexelsApiUrl, {
-        method: 'GET', // Pexels search is a GET request
+        method: 'GET',
         headers: {
-          'Authorization': pexelsApiKey, // Pexels uses 'Authorization' header
-          'Content-Type': 'application/json' // Still good practice
+          'Authorization': pexelsApiKey,
+          'Content-Type': 'application/json'
         },
       });
 
@@ -517,21 +470,17 @@ function App() {
       console.log(`Pexels Parsed JSON Result for prompt "${queryText}":`, pexelsResult);
 
       if (pexelsResult.photos && pexelsResult.photos.length > 0) {
-        // Choose a suitable image size, e.g., 'large' or 'medium'
         return pexelsResult.photos[0].src.large;
       } else {
         console.warn(`Pexels did not return any photos for prompt: "${queryText}"`);
-        return null; // Return null if no image is found
+        return null;
       }
     } catch (error) {
       console.error("Error in generateImageForSlide:", error);
-      throw error; // Re-throw to be caught by Promise.allSettled
+      throw error;
     }
   };
 
-  /**
-   * Generates a summary of the entire presentation using the Gemini API.
-   */
   const generatePptSummary = async () => {
     if (slides.length === 0) {
       showCustomModal("No slides to summarize. Please generate a presentation first.", 'info');
@@ -539,14 +488,13 @@ function App() {
     }
 
     setLoading(true);
-    setPptSummary(''); // Clear previous summary
-    setShowSummarySection(true); // Show the summary section, even if loading
+    setPptSummary('');
+    setShowSummarySection(true);
 
     try {
-      const geminiApiKey = "AIzaSyAJU8gPvh7bmNEw8CBJNUp6lIAMe4AC2Sg"; // YOUR GEMINI API KEY HERE
+      const geminiApiKey = "AIzaSyAJU8gPvh7bmNEw8CBJNUp6lIAMe4AC2Sg";
       const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
 
-      // Construct the full text of the presentation from all slides' elements
       let fullPresentationText = `Presentation Topic: ${topic}\n\n`;
       slides.forEach((slide, index) => {
         const titleElement = slide.elements.find(el => el.type === 'title');
@@ -560,11 +508,10 @@ function App() {
             fullPresentationText += contentElement.content + '\n';
           }
         }
-        fullPresentationText += '\n'; // Add a newline between slides
+        fullPresentationText += '\n';
       });
 
-      const prompt = `Summarize the following presentation content in a concise and informative paragraph. Focus on the main points and overall message.
-      \n\n${fullPresentationText}`;
+      const prompt = `Summarize the following presentation content in a concise and informative paragraph. Focus on the main points and overall message.\n\n${fullPresentationText}`;
 
       const geminiPayload = {
         contents: [
@@ -575,7 +522,7 @@ function App() {
           }
         ],
         generationConfig: {
-          responseMimeType: "text/plain" // Request plain text summary
+          responseMimeType: "text/plain"
         }
       };
 
@@ -614,13 +561,12 @@ function App() {
       } else {
         showCustomModal(`❌ An error occurred while generating summary: ${error.message}`, 'error');
       }
-      setPptSummary('Failed to generate summary.'); // Show a fallback message
+      setPptSummary('Failed to generate summary.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to speak the entire PPT
   const speakPpt = () => {
     if (slides.length === 0) {
       showCustomModal("No slides to speak. Please generate a presentation first.", 'info');
@@ -656,7 +602,6 @@ function App() {
     speakText(fullText);
   };
 
-  // Function to speak the summary
   const speakSummary = () => {
     if (!pptSummary) {
       showCustomModal("No summary to speak. Please generate a summary first.", 'info');
@@ -671,14 +616,9 @@ function App() {
     speakText(pptSummary);
   };
 
-
-  /**
-   * Handles copying the current slide's content to the clipboard.
-   */
   const handleCopySlide = () => {
     if (slides.length > 0 && currentSlideIndex < slides.length) {
       const slide = slides[currentSlideIndex];
-      // Adapt for new elements structure
       const titleElement = slide.elements.find(el => el.type === 'title');
       const contentElement = slide.elements.find(el => el.type === 'bullet-points' || el.type === 'text');
       const imageElement = slide.elements.find(el => el.type === 'image');
@@ -694,9 +634,7 @@ function App() {
       }
       if (imageElement && imageElement.imagePrompt) textToCopy += `\n\nImage Prompt: ${imageElement.imagePrompt}`;
 
-
       try {
-        // Using document.execCommand('copy') as navigator.clipboard.writeText() might not work in some iframe environments
         const textarea = document.createElement('textarea');
         textarea.value = textToCopy;
         document.body.appendChild(textarea);
@@ -711,15 +649,12 @@ function App() {
     }
   };
 
-  /**
-   * Deletes all slides from Firestore for the current user.
-   */
   const clearAllSlides = async () => {
     if (db && userId) {
       try {
         const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
         const q = query(slidesCollectionRef);
-        const snapshot = await getDocs(q); // Use getDocs for a one-time fetch
+        const snapshot = await getDocs(q);
 
         const deletePromises = [];
         snapshot.forEach((document) => {
@@ -734,9 +669,6 @@ function App() {
     }
   };
 
-  /**
-   * Asynchronously downloads the generated slides as a PDF document.
-   */
   const downloadPptAsPdf = async () => {
     if (slides.length === 0) {
       showCustomModal("No slides to download. Please generate a presentation first.", 'info');
@@ -749,33 +681,29 @@ function App() {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Create a temporary container to render slides for html2canvas
     const tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px'; // Position off-screen
+    tempContainer.style.left = '-9999px';
     tempContainer.style.top = '-9999px';
-    tempContainer.style.width = '800px'; // Fixed width for consistent rendering
+    tempContainer.style.width = '800px';
     tempContainer.style.height = 'auto';
     tempContainer.style.overflow = 'hidden';
-    tempContainer.style.backgroundColor = 'white'; // Ensure white background for capture
+    tempContainer.style.backgroundColor = 'white';
     document.body.appendChild(tempContainer);
 
     try {
       for (let i = 0; i < slides.length; i++) {
         const slideData = slides[i];
 
-        // Create a temporary slide element mirroring SlidePreview's structure and styles
         const tempSlideElement = document.createElement('div');
-        tempSlideElement.className = 'slide-preview'; // Apply base styles from App.css
+        tempSlideElement.className = 'slide-preview';
 
-        // Get computed styles once to resolve CSS variables for more direct application
         const computedStyle = getComputedStyle(document.documentElement);
 
-        // Apply base structural styles
         Object.assign(tempSlideElement.style, {
           width: '100%',
           padding: '40px',
-          minHeight: '700px', // Increased for PDF capture consistency
+          minHeight: '700px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-start',
@@ -787,32 +715,29 @@ function App() {
           borderRadius: getStyleValue('--border-radius'),
         });
 
-        // Apply template-specific background and border, simplifying for html2canvas
-        let slideBgColor = 'white'; // Safe default
+        let slideBgColor = 'white';
         if (activeTemplate?.styles?.slideBackground) {
             const templateBg = activeTemplate.styles.slideBackground;
             const resolvedBg = templateBg.startsWith('var(') ? computedStyle.getPropertyValue(templateBg.replace('var(', '').replace(')', '').trim()) : templateBg;
-            if (resolvedBg && !resolvedBg.includes('gradient')) { // Avoid gradients
+            if (resolvedBg && !resolvedBg.includes('gradient')) {
                 slideBgColor = resolvedBg;
-            } else if (!templateBg.includes('gradient')) { // Direct color value and not a gradient
+            } else if (!templateBg.includes('gradient')) {
                 slideBgColor = templateBg;
             }
         }
         tempSlideElement.style.backgroundColor = slideBgColor;
-        tempSlideElement.style.boxShadow = 'none'; // Remove complex shadows for capture
+        tempSlideElement.style.boxShadow = 'none';
         tempSlideElement.style.borderColor = activeTemplate?.styles?.borderColor?.startsWith('var(') ?
             computedStyle.getPropertyValue(activeTemplate.styles.borderColor.replace('var(', '').replace(')', '').trim()) :
             activeTemplate?.styles?.borderColor || getStyleValue('--border-color');
 
 
-        // Add accent shape to temporary slide for PDF capture
         if (activeTemplate?.styles?.accentShapeColor) {
           const accentShapeDiv = document.createElement('div');
           accentShapeDiv.className = 'accent-corner-shape';
           accentShapeDiv.style.backgroundColor = activeTemplate.styles.accentShapeColor.startsWith('var(') ?
             computedStyle.getPropertyValue(activeTemplate.styles.accentShapeColor.replace('var(', '').replace(')', '').trim()) :
             activeTemplate.styles.accentShapeColor;
-          // Set explicit dimensions for PDF capture consistency
           Object.assign(accentShapeDiv.style, {
             width: '100px',
             height: '100px',
@@ -820,12 +745,11 @@ function App() {
             top: '0',
             right: '0',
             borderBottomLeftRadius: getStyleValue('--border-radius'),
-            boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)', // Keep simple shadow for shape
+            boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)',
           });
           tempSlideElement.appendChild(accentShapeDiv);
         }
 
-        // Iterate over elements for PDF capture
         slideData.elements.forEach(element => {
           let elementHtml = null;
           const elementStyle = {
@@ -833,10 +757,9 @@ function App() {
             left: element.x,
             top: element.y,
             width: element.width,
-            height: element.height, // Use element's height property
+            height: element.height,
             boxSizing: 'border-box',
             padding: '5px',
-            // Add any other common styles or resolve CSS variables here
           };
 
           switch (element.type) {
@@ -893,7 +816,6 @@ function App() {
                   color: getStyleValue(activeTemplate.colors['--template-accent'])
                 });
                 const textSpan = document.createElement('span');
-                // Ensure no leading bullet from AI content
                 textSpan.textContent = point.replace(/^[\s\-\*\•]+\s*/, '');
                 listItem.appendChild(bulletIcon);
                 listItem.appendChild(textSpan);
@@ -906,7 +828,7 @@ function App() {
                 elementHtml.src = element.src;
                 Object.assign(elementHtml.style, {
                   width: '100%',
-                  height: '100%', // Use 100% of its container
+                  height: '100%',
                   objectFit: 'contain',
                   borderRadius: getStyleValue('--border-radius'),
                   boxShadow: getStyleValue('--box-shadow'),
@@ -918,41 +840,38 @@ function App() {
           }
 
           if (elementHtml) {
-            Object.assign(elementHtml.style, elementStyle); // Apply common element styles
+            Object.assign(elementHtml.style, elementStyle);
             tempSlideElement.appendChild(elementHtml);
           }
         });
 
         tempContainer.appendChild(tempSlideElement);
 
-        // A small delay to ensure rendering is complete before capture
         await new Promise(resolve => setTimeout(resolve, 100));
 
         const canvas = await html2canvas(tempSlideElement, {
-          scale: 2, // Higher scale for better quality PDF
+          scale: 2,
           useCORS: true,
-          logging: false, // Set to true for debugging html2canvas issues
-          // Ensure html2canvas background color is also simple
+          logging: false,
           backgroundColor: tempSlideElement.style.backgroundColor || 'white',
-          windowWidth: tempSlideElement.scrollWidth, // Capture full width
-          windowHeight: tempSlideElement.scrollHeight // Capture full height
+          windowWidth: tempSlideElement.scrollWidth,
+          windowHeight: tempSlideElement.scrollHeight
         });
 
         const imgData = canvas.toDataURL('image/png');
 
-        const imgWidth = pdfWidth - 20; // 10mm margin on each side
+        const imgWidth = pdfWidth - 20;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         if (i > 0) {
           pdf.addPage();
         }
 
-        // Center image on the page
         const xOffset = (pdfWidth - imgWidth) / 2;
         const yOffset = (pdfHeight - imgHeight) / 2;
         pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
 
-        tempContainer.removeChild(tempSlideElement); // Clean up the temporary slide element
+        tempContainer.removeChild(tempSlideElement);
       }
 
       pdf.save(`presentation_${topic || "untitled"}.pdf`);
@@ -969,52 +888,45 @@ function App() {
     }
   };
 
-/**
- * Exports the presentation as a PowerPoint file (PPTX) by capturing rendered HTML.
- */
 const exportToPPTX = async () => {
   if (slides.length === 0) {
     showCustomModal("No slides to export. Please generate a presentation first.", 'info');
     return;
   }
 
-  setLoading(true); // Start loading for PPTX export
+  setLoading(true);
 
-  let tempContainer = null; // Declare tempContainer outside the try block
+  let tempContainer = null;
 
   try {
     const pptx = new PptxGenJS();
     pptx.author  = "AI PPT Generator";
     pptx.company = "Your Company";
     pptx.title   = topic || "AI Generated Presentation";
-    pptx.layout = 'LAYOUT_WIDE'; // Standard 16:9 layout (10 inches wide, 7.5 inches high)
+    pptx.layout = 'LAYOUT_WIDE';
 
-    // Create a temporary container to render slides for html2canvas, similar to PDF export
-    tempContainer = document.createElement('div'); // Initialize here
+    tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px'; // Position off-screen
+    tempContainer.style.left = '-9999px';
     tempContainer.style.top = '-9999px';
-    tempContainer.style.width = '950px'; // Match main-slides-display-area max-width for consistent capture
+    tempContainer.style.width = '950px';
     tempContainer.style.height = 'auto';
     tempContainer.style.overflow = 'hidden';
-    tempContainer.style.backgroundColor = 'white'; // Ensure white background for capture
+    tempContainer.style.backgroundColor = 'white';
     document.body.appendChild(tempContainer);
 
-    // Get computed styles once to resolve CSS variables for more direct application
     const computedStyle = getComputedStyle(document.documentElement);
 
     for (let i = 0; i < slides.length; i++) {
       const slideData = slides[i];
 
-      // Create a temporary slide element mirroring SlidePreview's structure and styles
       const tempSlideElement = document.createElement('div');
-      tempSlideElement.className = 'slide-preview'; // Apply base styles from App.css
+      tempSlideElement.className = 'slide-preview';
 
-      // Apply base structural styles
       Object.assign(tempSlideElement.style, {
         width: '100%',
         padding: '40px',
-        minHeight: '700px', // Increased for PPTX capture consistency
+        minHeight: '700px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-start',
@@ -1026,31 +938,28 @@ const exportToPPTX = async () => {
         borderRadius: getStyleValue('--border-radius'),
       });
 
-      // Apply template-specific background and border, simplifying for html2canvas
-      let slideBgColor = 'white'; // Safe default
+      let slideBgColor = 'white';
       if (activeTemplate?.styles?.slideBackground) {
           const templateBg = activeTemplate.styles.slideBackground;
           const resolvedBg = templateBg.startsWith('var(') ? computedStyle.getPropertyValue(templateBg.replace('var(', '').replace(')', '').trim()) : templateBg;
-          if (resolvedBg && !resolvedBg.includes('gradient')) { // Avoid gradients
+          if (resolvedBg && !resolvedBg.includes('gradient')) {
               slideBgColor = resolvedBg;
-          } else if (!templateBg.includes('gradient')) { // Direct color value and not a gradient
+          } else if (!templateBg.includes('gradient')) {
               slideBgColor = templateBg;
           }
       }
       tempSlideElement.style.backgroundColor = slideBgColor;
-      tempSlideElement.style.boxShadow = 'none'; // Remove complex shadows for capture
+      tempSlideElement.style.boxShadow = 'none';
       tempSlideElement.style.borderColor = activeTemplate?.styles?.borderColor?.startsWith('var(') ?
           computedStyle.getPropertyValue(activeTemplate.styles.borderColor.replace('var(', '').replace(')', '').trim()) :
           activeTemplate?.styles?.borderColor || getStyleValue('--border-color');
 
-      // Add accent shape to temporary slide for PPTX capture
       if (activeTemplate?.styles?.accentShapeColor) {
         const accentShapeDiv = document.createElement('div');
         accentShapeDiv.className = 'accent-corner-shape';
         accentShapeDiv.style.backgroundColor = activeTemplate.styles.accentShapeColor.startsWith('var(') ?
           computedStyle.getPropertyValue(activeTemplate.styles.accentShapeColor.replace('var(', '').replace(')', '').trim()) :
           activeTemplate.styles.accentShapeColor;
-        // Set explicit dimensions for capture consistency
         Object.assign(accentShapeDiv.style, {
           width: '100px',
           height: '100px',
@@ -1058,12 +967,11 @@ const exportToPPTX = async () => {
           top: '0',
           right: '0',
           borderBottomLeftRadius: getStyleValue('--border-radius'),
-          boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)', // Keep simple shadow for shape
+          boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)',
         });
         tempSlideElement.appendChild(accentShapeDiv);
       }
 
-      // Iterate over elements for PPTX capture
       slideData.elements.forEach(element => {
         let elementHtml = null;
         const elementStyle = {
@@ -1071,10 +979,9 @@ const exportToPPTX = async () => {
           left: element.x,
           top: element.y,
           width: element.width,
-          height: element.height, // Use element's height property
+          height: element.height,
           boxSizing: 'border-box',
           padding: '5px',
-          // Add any other common styles or resolve CSS variables here
         };
 
         switch (element.type) {
@@ -1131,7 +1038,6 @@ const exportToPPTX = async () => {
                   color: getStyleValue(activeTemplate.colors['--template-accent'])
                 });
                 const textSpan = document.createElement('span');
-                // Ensure no leading bullet from AI content
                 textSpan.textContent = point.replace(/^[\s\-\*\•]+\s*/, '');
                 listItem.appendChild(bulletIcon);
                 listItem.appendChild(textSpan);
@@ -1144,7 +1050,7 @@ const exportToPPTX = async () => {
                 elementHtml.src = element.src;
                 Object.assign(elementHtml.style, {
                   width: '100%',
-                  height: '100%', // Use 100% of its container
+                  height: '100%',
                   objectFit: 'contain',
                   borderRadius: getStyleValue('--border-radius'),
                   boxShadow: getStyleValue('--box-shadow'),
@@ -1156,18 +1062,17 @@ const exportToPPTX = async () => {
           }
 
           if (elementHtml) {
-            Object.assign(elementHtml.style, elementStyle); // Apply common element styles
+            Object.assign(elementHtml.style, elementStyle);
             tempSlideElement.appendChild(elementHtml);
           }
         });
 
         tempContainer.appendChild(tempSlideElement);
 
-        // A small delay to ensure rendering is complete before capture
-        await new Promise(resolve => setTimeout(resolve, 100)); // Give browser time to render
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         const canvas = await html2canvas(tempSlideElement, {
-          scale: 2, // Higher scale for better quality
+          scale: 2,
           useCORS: true,
           logging: false,
           backgroundColor: tempSlideElement.style.backgroundColor || 'white',
@@ -1177,12 +1082,10 @@ const exportToPPTX = async () => {
 
         const imgData = canvas.toDataURL('image/png');
 
-        // Add a new slide to the PPTX and add the captured image to it
         const slide = pptx.addSlide();
-        // Position the image to cover the entire slide
         slide.addImage({ data: imgData, x: 0, y: 0, w: pptx.presLayout.width, h: pptx.presLayout.height });
 
-        tempContainer.removeChild(tempSlideElement); // Clean up the temporary slide element
+        tempContainer.removeChild(tempSlideElement);
       }
 
       pptx.writeFile({ fileName: `presentation_${topic || "untitled"}.pptx` });
@@ -1192,17 +1095,13 @@ const exportToPPTX = async () => {
       console.error("Error exporting PPTX:", err);
       showCustomModal(`Error exporting PPTX: ${err.message}`, 'error');
     } finally {
-      // Ensure tempContainer is defined before trying to remove it
       if (tempContainer && tempContainer.parentNode) {
         tempContainer.parentNode.removeChild(tempContainer);
       }
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
-  /**
-   * Adds a new blank slide to Firestore when in 'customize' mode.
-   */
   const addNewSlide = async () => {
     if (!db || !userId) {
       showCustomModal("Firebase is not ready. Please wait or check your connection.", 'error');
@@ -1212,19 +1111,16 @@ const exportToPPTX = async () => {
     try {
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
       const newSlideData = {
-        // NEW DATA MODEL: Elements array with default content, adjusted for more space
         elements: [
           { id: `title-${Date.now()}-1`, type: 'title', content: "New Custom Slide", x: '5%', y: '5%', width: '90%', height: 'auto' },
           { id: `text-${Date.now()}-2`, type: 'bullet-points', content: ["• Add your first bullet point here.", "• Add another point."], x: '10%', y: '20%', width: '80%', height: 'auto' },
-          { id: `image-${Date.now()}-3`, type: 'image', imagePrompt: "", src: null, x: '5%', y: '45%', width: '90%', height: '45%' } // Set explicit height
+          { id: `image-${Date.now()}-3`, type: 'image', imagePrompt: "", src: null, x: '5%', y: '45%', width: '90%', height: '45%' }
         ],
         timestamp: new Date(),
       };
       await addDoc(slidesCollectionRef, newSlideData);
       showCustomModal("New blank slide added! You can now edit its content.", 'info');
-      // After adding, set current slide to the new one (which will be the last one)
-      // The onSnapshot listener will update 'slides' state, so we just need to set index
-      setCurrentSlideIndex(slides.length); // This will point to the newly added slide
+      setCurrentSlideIndex(slides.length);
     } catch (error) {
       console.error("Error adding new slide:", error);
       showCustomModal(`Failed to add new slide: ${error.message}`, 'error');
@@ -1233,25 +1129,18 @@ const exportToPPTX = async () => {
     }
   };
 
-
-  // Function to initiate direct editing of a slide
   const handleEditSlide = (slideId) => {
     setEditingSlideId(slideId);
-    // When starting edit, copy current slide's elements to temp state
     const slideToEdit = slides.find(s => s.id === slideId);
     if (slideToEdit) {
-      // Deep copy elements array and its objects to ensure independent state for editing
       setTempSlideElements(slideToEdit.elements.map(el => ({ ...el })));
     }
   };
 
-  // Handler for changes to elements within the editable SlidePreview
   const handleElementChangeInPreview = (slideId, updatedElements) => {
-    // This handler receives the full updated elements array from SlidePreview
     setTempSlideElements(updatedElements);
   };
 
-  // Function to save changes from direct editing to Firestore
   const saveSlideChanges = async () => {
     if (!editingSlideId || !db || !userId) {
       showCustomModal("No slide is currently being edited or Firebase is not ready.", 'error');
@@ -1260,11 +1149,11 @@ const exportToPPTX = async () => {
     setLoading(true);
     try {
       await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/slides`, editingSlideId), {
-        elements: tempSlideElements, // Save the entire updated elements array
+        elements: tempSlideElements,
       });
       showCustomModal('Slide updated successfully!', 'info');
-      setEditingSlideId(null); // Exit editing mode
-      setTempSlideElements([]); // Clear temp changes
+      setEditingSlideId(null);
+      setTempSlideElements([]);
     } catch (error) {
       console.error("Error saving slide changes:", error);
       showCustomModal(`Failed to save slide changes: ${error.message}`, 'error');
@@ -1273,13 +1162,11 @@ const exportToPPTX = async () => {
     }
   };
 
-  // Function to cancel direct editing
   const cancelSlideEditing = () => {
-    setEditingSlideId(null); // Exit editing mode
-    setTempSlideElements([]); // Discard temp changes
+    setEditingSlideId(null);
+    setTempSlideElements([]);
   };
 
-  // Function to delete a slide from Firestore (remains the same)
   const handleDeleteSlide = (slideId) => {
     showCustomModal("Are you sure you want to delete this slide?", 'confirm', async (confirmed) => {
       if (confirmed) {
@@ -1287,7 +1174,6 @@ const exportToPPTX = async () => {
           try {
             await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/slides`, slideId));
             showCustomModal('Slide deleted successfully!', 'info');
-            // If the deleted slide was the current one, adjust currentSlideIndex
             if (slideId === currentSlide?.id) {
               setCurrentSlideIndex(prevIndex => Math.max(0, prevIndex - 1));
             }
@@ -1300,8 +1186,6 @@ const exportToPPTX = async () => {
     });
   };
 
-  // Ensure currentSlide is always valid
-  // If in editing mode, use tempSlideElements for the current slide preview
   const currentSlide = slides.length > 0 ?
     (editingSlideId === slides[currentSlideIndex]?.id
       ? { ...slides[currentSlideIndex], elements: tempSlideElements }
@@ -1310,7 +1194,6 @@ const exportToPPTX = async () => {
 
   return (
     <div className="app">
-      {/* Custom Modal Component */}
       {showModal && (
         <CustomModal
           message={modalMessage}
@@ -1321,7 +1204,6 @@ const exportToPPTX = async () => {
         />
       )}
 
-      {/* Conditional rendering of WelcomePage or main app content */}
       {showWelcomePage ? (
         <WelcomePage onGetStarted={() => setShowWelcomePage(false)} />
       ) : (
@@ -1329,13 +1211,12 @@ const exportToPPTX = async () => {
           <img src="/logo.png" alt="AI Logo" className="logo" />
           <h1>AI PPT Generator</h1>
 
-          {/* Mode Selection Buttons */}
           <div className="mode-selection-group">
             <button
               className={`mode-button ${mode === 'auto-generate' ? 'active' : ''}`}
               onClick={() => {
                 setMode('auto-generate');
-                setEditingSlideId(null); // Exit edit mode when changing modes
+                setEditingSlideId(null);
                 setTempSlideElements([]);
               }}
               disabled={loading || isSpeaking}
@@ -1346,7 +1227,7 @@ const exportToPPTX = async () => {
               className={`mode-button ${mode === 'customize' ? 'active' : ''}`}
               onClick={() => {
                 setMode('customize');
-                setEditingSlideId(null); // Exit edit mode when changing modes
+                setEditingSlideId(null);
                 setTempSlideElements([]);
               }}
               disabled={loading || isSpeaking}
@@ -1355,7 +1236,6 @@ const exportToPPTX = async () => {
             </button>
           </div>
 
-          {/* Conditional Rendering based on mode */}
           {mode === 'auto-generate' && (
             <div className="input-group">
               <input
@@ -1400,7 +1280,6 @@ const exportToPPTX = async () => {
             </div>
           )}
 
-          {/* Template & Voice Selection Dropdowns */}
           <div className="selection-group">
             <div className="template-selection-group">
               <label htmlFor="template-select">Choose a Template:</label>
@@ -1423,7 +1302,6 @@ const exportToPPTX = async () => {
               </select>
             </div>
 
-            {/* Speak Language Selection */}
             <div className="voice-selection-group">
               <label htmlFor="voice-select">Choose Voice:</label>
               <select
@@ -1476,7 +1354,7 @@ const exportToPPTX = async () => {
                     templateStyles={activeTemplate.styles}
                     templateColors={activeTemplate.colors}
                     isEditing={editingSlideId === currentSlide.id}
-                    onElementChange={handleElementChangeInPreview} // New handler for element changes
+                    onElementChange={handleElementChangeInPreview}
                   />
                 )}
               </div>
@@ -1503,7 +1381,6 @@ const exportToPPTX = async () => {
               <button className="download-button export-ppt-button" onClick={exportToPPTX} disabled={loading || slides.length === 0 || editingSlideId !== null || isSpeaking}>
                 Export PPT
               </button>
-              {/* Copy Slide Button */}
               <button
                 className="download-button copy-slide-button"
                 onClick={handleCopySlide}
@@ -1511,7 +1388,6 @@ const exportToPPTX = async () => {
               >
                 Copy Slide Content
               </button>
-              {/* PPT Summary Button */}
               <button
                 className="download-button summary-button"
                 onClick={generatePptSummary}
@@ -1519,7 +1395,6 @@ const exportToPPTX = async () => {
               >
                 Generate PPT Summary
               </button>
-              {/* Speak PPT Button */}
               <button
                 className="download-button speak-ppt-button"
                 onClick={speakPpt}
@@ -1530,12 +1405,10 @@ const exportToPPTX = async () => {
             </div>
           )}
 
-          {/* PPT Summary Display Section */}
           {showSummarySection && pptSummary && (
             <div className="ppt-summary-section">
               <h2>Presentation Summary</h2>
               <p>{pptSummary}</p>
-              {/* Speak Summary Button */}
               <button
                 className="download-button speak-summary-button"
                 onClick={speakSummary}
