@@ -1,0 +1,141 @@
+/* src/components/TemplateCard.css */
+
+/* Individual Template Card Styling */
+.template-card {
+    width: 180px; /* Slightly larger card */
+    height: 170px; /* Slightly taller card */
+    background-color: var(--template-card-background); /* Uses dynamic template background */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px; /* More padding inside card */
+    box-sizing: border-box;
+    border: 2px solid var(--template-card-border); /* Dynamic border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Default shadow */
+    position: relative; /* For the selected checkmark */
+}
+
+.template-card:hover {
+    transform: translateY(-8px) scale(1.03); /* More pronounced hover effect */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.template-card.selected {
+    border: 3px solid var(--primary-color); /* Highlight selected card */
+    box-shadow: 0 0 25px rgba(0, 201, 255, 0.8); /* Stronger glow */
+    transform: scale(1.05); /* More pronounced scale */
+}
+
+/* Selected checkmark icon */
+.template-card.selected .selected-checkmark {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: var(--secondary-color);
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.template-card-preview {
+    width: 100%;
+    height: 90px; /* Taller preview area */
+    border-radius: 8px; /* More rounded */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px; /* More padding */
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.1); /* Subtle inner border */
+    background-color: rgba(0,0,0,0.1); /* Slight darker background for preview */
+    position: relative; /* For mini accent shape */
+}
+
+.template-card-title-bar {
+    width: 90%; /* Wider title bar */
+    height: 18px; /* Taller title bar */
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background-color: var(--template-primary); /* Use template primary for title bar */
+}
+
+.template-card-content-block {
+    width: 95%; /* Wider content block */
+    height: 12px; /* Taller content block */
+    border-radius: 3px;
+    margin-bottom: 5px;
+    background-color: var(--template-text); /* Use template text color for content */
+    opacity: 0.7;
+}
+
+.template-card-text-line {
+    width: 70%; /* Longer text line */
+    height: 10px; /* Taller text line */
+    border-radius: 2px;
+    background-color: var(--template-light-text); /* Use template light text color */
+    opacity: 0.6;
+}
+
+.template-card-name {
+    margin-top: 15px; /* More space */
+    font-size: 1em; /* Slightly larger font */
+    font-weight: 700; /* Bolder */
+    color: var(--template-card-text); /* Uses dynamic template text color */
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Responsive adjustments for template cards */
+@media (max-width: 768px) {
+    .template-card {
+        width: 150px;
+        height: 140px;
+        padding: 10px;
+    }
+    .template-card-preview {
+        height: 80px;
+        padding: 5px;
+    }
+    .template-card-title-bar {
+        height: 16px;
+    }
+    .template-card-content-block {
+        height: 10px;
+    }
+    .template-card-text-line {
+        height: 7px;
+    }
+    .template-card-name {
+        font-size: 0.9em;
+    }
+}
+
+/* Mini accent shape for template card previews */
+.template-card-preview .mini-accent-corner-shape {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 25px; /* Smaller size for card preview */
+  height: 25px; /* Smaller size for card preview */
+  background-color: var(--template-accent-shape-color); /* Uses the specific accent color */
+  border-bottom-left-radius: 3px; /* Smaller rounded corner */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}

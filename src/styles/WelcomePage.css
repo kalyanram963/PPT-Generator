@@ -1,0 +1,163 @@
+/* WelcomePage.css */
+
+.welcome-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    position: absolute; /* Position over the main app background */
+    top: 0;
+    left: 0;
+    /* IMPORTANT: Removed background-color and backdrop-filter from here */
+    z-index: 999; /* Ensure it's above everything except modals, but its content will be layered */
+    padding: 20px;
+    box-sizing: border-box;
+    animation: fadeIn 0.8s ease-out; /* Use a fading animation */
+}
+
+/* This div acts as the semi-transparent overlay, sitting directly on top of the video */
+.welcome-page-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Darker overlay for welcome page */
+    backdrop-filter: blur(12px); /* Stronger blur for welcome page */
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 0; /* Placed above the video, below the content */
+}
+
+
+/* Video Background Container Styling */
+.welcome-video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1; /* Placed behind the welcome-page-overlay */
+}
+
+.welcome-video-background video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure video covers the entire area */
+    filter: brightness(0.7) grayscale(0.2); /* Slightly darken and desaturate for better content readability */
+}
+
+
+.welcome-content {
+    background-color: var(--card-background); /* Use existing card background variable */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    border: 2px solid var(--primary-color); /* Primary color border */
+    animation: zoomIn 0.5s ease-out; /* Pop-in animation */
+    
+    /* Flexbox for internal alignment */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically if content allows */
+    z-index: 1; /* Ensure content is above the video and its overlay */
+}
+
+.welcome-title {
+    font-size: clamp(2em, 5vw, 3.5em); /* Responsive font size */
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    text-shadow: 0 0 20px rgba(0, 201, 255, 0.8); /* Stronger glow */
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Styling for the logo on the welcome page */
+.welcome-logo {
+    width: clamp(150px, 30vw, 250px); /* Responsive width for the logo */
+    height: auto;
+    margin: 30px auto 30px auto; /* Top, auto horizontal, bottom, auto horizontal */
+    filter: drop-shadow(0 0 20px var(--primary-color)); /* Glow effect */
+    transition: transform 0.3s ease-in-out;
+}
+
+.welcome-logo:hover {
+    transform: scale(1.05); /* Slight scale on hover */
+}
+
+.get-started-button {
+    padding: 18px 40px;
+    background: linear-gradient(45deg, var(--button-gradient-start), var(--button-gradient-end));
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.3em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px var(--shadow-color);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 30px; /* Reduced space from logo */
+}
+
+.get-started-button:hover {
+    background: linear-gradient(45deg, var(--button-hover-gradient-start), var(--button-hover-gradient-end));
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 35px var(--shadow-color);
+}
+
+/* Animations (re-using existing ones if available in App.css or defining here) */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive adjustments for WelcomePage */
+@media (max-width: 768px) {
+    .welcome-content {
+        padding: 30px;
+    }
+    .welcome-title {
+        font-size: clamp(1.8em, 4.5vw, 3em);
+    }
+    .welcome-logo {
+        width: clamp(120px, 25vw, 200px); /* Adjusted size for tablets */
+        margin: 25px auto 25px auto; /* Adjusted margin */
+    }
+    .get-started-button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+        margin-top: 25px; /* Adjusted margin */
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-content {
+        padding: 20px;
+    }
+    .welcome-title {
+        font-size: clamp(1.5em, 4vw, 2.5em);
+        margin-bottom: 20px;
+    }
+    .welcome-logo {
+        width: clamp(100px, 20vw, 150px); /* Adjusted size for mobile */
+        margin: 20px auto 20px auto; /* Adjusted margin */
+    }
+    .get-started-button {
+        padding: 12px 25px;
+        font-size: 1em;
+        margin-top: 20px; /* Adjusted margin */
+    }
+}

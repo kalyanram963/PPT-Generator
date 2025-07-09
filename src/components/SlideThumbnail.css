@@ -1,0 +1,145 @@
+/* src/components/SlideThumbnail.css */
+
+.slide-thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.08); /* Darker background for unselected */
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent; /* Default transparent border */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    min-height: 90px; /* Ensure a minimum height for thumbnails */
+    justify-content: space-between;
+    text-align: center;
+    position: relative;
+    overflow: hidden; /* Hide overflowing content */
+    width: 180px; /* Match App.css thumbnail width */
+    flex-shrink: 0; /* Prevent shrinking in flex container */
+}
+
+.slide-thumbnail:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.slide-thumbnail.selected {
+    background-color: rgba(25, 25, 40, 0.9); /* Darker, more opaque for selected */
+    border-color: var(--primary-color); /* Bright primary color border for selected */
+    box-shadow: 0 0 20px rgba(0, 201, 255, 0.8); /* Stronger glow for selected */
+    transform: scale(1.03); /* Slight scale up */
+}
+
+.slide-thumbnail-number {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--primary-color); /* Bright primary color for number */
+    flex-shrink: 0;
+    width: 100%; /* Take full width */
+    margin-bottom: 5px; /* Space below number */
+}
+
+.slide-thumbnail-visual-preview {
+    width: calc(100% - 10px); /* Slightly smaller than thumbnail width */
+    height: 60px; /* Fixed height for the miniature slide area */
+    border-radius: 6px; /* Rounded corners for the preview area */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; /* Distribute blocks */
+    align-items: center;
+    padding: 5px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle inner border */
+    flex-shrink: 0; /* Prevent shrinking */
+    margin-bottom: 8px; /* Space between visual and text content */
+    position: relative; /* For the mini accent shape */
+}
+
+.mini-title-bar {
+    width: 80%;
+    height: 10px;
+    border-radius: 3px;
+    opacity: 0.8;
+}
+
+.mini-content-block {
+    width: 90%;
+    height: 7px;
+    border-radius: 2px;
+    opacity: 0.6;
+}
+
+.thumbnail-title {
+    font-size: 0.85em; /* Slightly smaller title for compactness */
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-bottom: 3px;
+}
+
+.thumbnail-content-snippet {
+    font-size: 0.7em; /* Smaller font for snippet */
+    color: var(--light-text-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Show only 1 line for snippet */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    line-height: 1.2;
+}
+
+.thumbnail-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.thumbnail-action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+  color: var(--light-text-color);
+}
+
+.thumbnail-action-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+}
+
+.thumbnail-action-button svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+/* NEW: Mini Accent Corner Shape for Thumbnails */
+.mini-accent-corner-shape {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px; /* Smaller size for thumbnail preview */
+  height: 30px; /* Smaller size for thumbnail preview */
+  background-color: var(--template-accent-shape-color); /* Uses the specific accent color */
+  border-bottom-left-radius: 5px; /* Smaller rounded corner */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Responsive adjustments for thumbnail actions */
+@media (max-width: 768px) {
+  .thumbnail-action-button {
+    padding: 3px;
+  }
+}

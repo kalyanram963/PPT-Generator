@@ -1,13 +1,81 @@
+/* Import Google Fonts for a modern look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Global Resets and Variables */
+:root {
+    /* Core Theme Colors (Dark/AI-inspired) */
+    --primary-color: #00C9FF; /* Bright Cyan/Blue */
+    --secondary-color: #92FE9D; /* Bright Green */
+    --accent-color: #FF6B6B; /* Vibrant Red/Orange */
+    --text-color: #E0E0E0; /* Light Gray for text */
+    --light-text-color: #A0A0A0; /* Slightly darker light gray */
+    --background-dark: #1A1A2E; /* Deep Blue-Violet for main background */
+    --card-background: rgba(25, 25, 40, 0.85); /* Slightly transparent dark card background */
+    --border-color: rgba(0, 201, 255, 0.3); /* Border matching primary color, subtle */
+    --shadow-color: rgba(0, 0, 0, 0.4); /* Deeper shadow for depth */
+
+    /* UI Element Specifics */
+    --border-radius: 12px; /* More rounded corners */
+    --box-shadow: 0 8px 25px var(--shadow-color); /* Enhanced shadow */
+    --input-bg: rgba(255, 255, 255, 0.08); /* Darker input background */
+    --input-border: rgba(0, 201, 255, 0.5); /* Input border matching primary */
+    --button-gradient-start: #00C9FF;
+    --button-gradient-end: #92FE9D;
+    --button-hover-gradient-start: #00B0E0;
+    --button-hover-gradient-end: #7ADF85;
+
+    /* Template-specific CSS variables - these will be dynamically set on .slide-preview */
+    --template-primary: var(--primary-color);
+    --template-secondary: var(--secondary-color);
+    --template-accent: var(--accent-color);
+    --template-text: var(--text-color);
+    --template-light-text: var(--light-text-color);
+    --template-background: var(--card-background);
+    --template-border: var(--border-color);
+    --template-shadow: var(--box-shadow);
+
+    /* For template cards (derived from template-specific, but can be overridden) */
+    --template-card-background: var(--card-background);
+    --template-card-border: var(--border-color);
+    --template-card-shadow: var(--box-shadow);
+    --template-card-text: var(--text-color);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', sans-serif; /* Prefer Inter for general UI text */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-dark); /* Default dark background */
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    font-family: 'Fira Code', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace; /* Fira Code for code snippets */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color); /* Headings in main app use light text */
+    margin-bottom: 0.5em;
+    font-weight: 700; /* Bolder headings */
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+/* Base styles for the main App container */
+.App {
+    /* This class will be overridden by specific styles in App.css for the app container */
+}
+
+/* Remove unused CRA default styles */
+.App-logo, .App-header, .App-link, @keyframes App-logo-spin {
+    display: none; /* Hide or remove if not used */
 }

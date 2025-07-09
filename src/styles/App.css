@@ -1,0 +1,1166 @@
+/* Overall App Container Styling */
+.app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    /* Using a more abstract, AI-themed background image */
+    background: url('https://images.unsplash.com/photo-1518621736915-f3b18c669d27?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+    overflow-x: hidden;
+    color: var(--text-color); /* Ensure text is visible on dark background */
+}
+
+/* Overlay for better readability over the background image */
+.app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for contrast */
+    backdrop-filter: blur(8px); /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+}
+
+/* Content wrapper to bring content above the overlay */
+.app > * {
+    z-index: 2;
+    position: relative;
+}
+
+.logo {
+    width: 150px; /* Slightly larger logo */
+    height: auto;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 15px var(--primary-color)); /* Stronger glow */
+    transition: transform 0.3s ease-in-out;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+h1 {
+    color: var(--text-color); /* Use theme variable */
+    font-size: 3.5em; /* Larger, more impactful title */
+    margin-bottom: 40px;
+    text-shadow: 0 0 15px var(--primary-color); /* Glow matching primary color */
+    font-weight: 800; /* Extra bold */
+    letter-spacing: 2px;
+}
+
+/* User ID Display */
+.user-id-display {
+    background-color: var(--card-background);
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 30px;
+    font-size: 0.9em;
+    color: var(--light-text-color);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    word-break: break-all; /* Ensure long IDs wrap */
+}
+
+.user-id-display .font-mono {
+    font-family: 'Fira Code', monospace;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+
+/* Input and Button Styling */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* More space between inputs */
+    width: 100%;
+    max-width: 600px; /* Wider input area */
+    margin-bottom: 30px;
+    align-items: center;
+}
+
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 18px 25px; /* Larger padding for better touch targets */
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Inner shadow for depth */
+    outline: none; /* Remove default outline */
+    font-size: 1.2em; /* Adjusted font size to match buttons */
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder {
+    color: var(--light-text-color);
+    opacity: 0.7;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+.template-select:focus,
+.language-select:focus,
+.theme-prompt-input:focus,
+.voice-select:focus { /* ADDED .voice-select:focus */
+    border-color: var(--primary-color); /* Highlight with primary color */
+    box-shadow: 0 0 0 3px rgba(0, 201, 255, 0.3), inset 0 2px 5px rgba(0, 0, 0, 0.3); /* Outer glow + inner shadow */
+}
+
+/* General Button Styling */
+button {
+    padding: 16px 35px; /* Larger buttons */
+    background: linear-gradient(45deg, var(--button-gradient-start), var(--button-gradient-end));
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.2em; /* Larger font for buttons */
+    font-weight: 700; /* Bolder text */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px var(--shadow-color); /* Deeper shadow */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background: linear-gradient(45deg, var(--button-hover-gradient-start), var(--button-hover-gradient-end));
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+button:disabled {
+    background: #444;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Template Selection Group */
+.template-selection-group {
+    margin-bottom: 20px; /* More space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* More space */
+    width: 100%;
+    max-width: 600px;
+}
+
+.template-selection-group label {
+    color: var(--text-color);
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.template-select, /* ADDED .voice-select HERE */
+.voice-select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg); /* Use input background for the select box */
+    color: var(--text-color); /* Use text color for the select box */
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Custom SVG arrow for dropdown */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Use currentColor */
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px; /* Larger arrow */
+    padding-right: 50px;
+}
+
+/* Style for the dropdown options */
+.template-select option, /* ADDED .voice-select option HERE */
+.voice-select option {
+    background-color: var(--card-background); /* Using card background for options */
+    color: var(--text-color); /* Ensure text is visible */
+    border: 1px solid var(--input-border); /* Add a subtle border */
+    padding: 8px 15px; /* Add some padding to options */
+    /* These properties might not fully apply to <option> elements consistently across browsers */
+    /* -webkit-appearance: none; */
+    /* -moz-appearance: none; */
+    /* appearance: none; */
+}
+
+.template-select option:checked, /* ADDED .voice-select option:checked HERE */
+.voice-select option:checked { /* Style for the currently selected option in the list */
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.template-select option:hover, /* ADDED .voice-select option:hover HERE */
+.voice-select option:hover { /* Style for hovering over options in the list */
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+/* NEW: Language Selection Group */
+.language-selection-group {
+    margin-bottom: 40px; /* Space below this group */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.language-selection-group label {
+    color: var(--text-color);
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.language-select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+    padding-right: 50px;
+}
+
+.language-select option {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: 8px 15px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.language-select option:checked {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.language-select option:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+/* NEW: AI Theme Generator Section */
+.theme-generator-section {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 950px; /* Match main slide area width */
+    text-align: center;
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.theme-generator-section h2 {
+    color: var(--primary-color);
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
+}
+
+.theme-input-group {
+    margin-bottom: 30px;
+}
+
+.theme-prompt-input {
+    width: 100%;
+    padding: 18px 25px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1.2em; /* Match button font size */
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
+    margin-bottom: 20px; /* Space between input and button */
+}
+
+.theme-prompt-input::placeholder {
+    color: var(--light-text-color);
+    opacity: 0.7;
+}
+
+.suggested-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px; /* Space between theme cards */
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.theme-card {
+    background-color: var(--input-bg); /* Lighter background for cards */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 250px; /* Ensure consistent card height */
+}
+
+.theme-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+}
+
+.theme-card h3 {
+    font-size: 1.5em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    text-align: center;
+    text-shadow: none; /* Remove h2 text-shadow */
+    border-bottom: 1px solid var(--secondary-color);
+    padding-bottom: 10px;
+}
+
+.color-palette {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.theme-fonts {
+    font-size: 0.95em;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.theme-layout-description {
+    font-size: 0.9em;
+    color: var(--light-text-color);
+    margin-bottom: 20px;
+    flex-grow: 1; /* Allow description to take space */
+    text-align: center;
+}
+
+.apply-theme-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1em;
+    margin-top: auto; /* Push button to the bottom */
+}
+
+
+/* NEW: Two-column layout for slides and navigator */
+.slides-display-wrapper {
+    display: flex;
+    gap: 30px; /* Space between sidebar and main slide */
+    width: 100%;
+    max-width: 1200px; /* Max width for the entire display area */
+    margin-top: 40px; /* Adjusted to align with main slide content */
+    align-items: flex-start; /* Align items to the top */
+}
+
+/* NEW: Slide Navigator Sidebar */
+.slide-navigator-sidebar {
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    width: 180px; /* Fixed width for the sidebar */
+    height: auto; /* Adjust height based on content */
+    max-height: 70vh; /* Max height for scrollable area */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 15px;
+    background-color: var(--card-background); /* Use card background variable */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between thumbnails */
+    border: 1px solid var(--border-color);
+}
+
+/* NEW: Individual Slide Thumbnail Styling */
+.slide-thumbnail {
+    display: flex;
+    align-items: center; /* Vertically align number and content */
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--input-bg); /* Use input background for thumbnails */
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent; /* Default transparent border */
+    box-shadow: var(--box-shadow);
+    min-height: 90px; /* Ensure a minimum height for thumbnails */
+    flex-direction: column; /* Stack number, visual, and text vertically */
+    justify-content: space-between;
+    text-align: center;
+    position: relative;
+    overflow: hidden; /* Hide overflowing content */
+}
+
+.slide-thumbnail:hover {
+    background-color: var(--input-border); /* Slightly lighter on hover */
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: var(--box-shadow);
+}
+
+.slide-thumbnail.selected {
+    background-color: var(--card-background); /* Darker, more opaque for selected */
+    border-color: var(--primary-color); /* Bright primary color border for selected */
+    box-shadow: 0 0 20px var(--primary-color); /* Stronger glow for selected */
+    transform: scale(1.03); /* Slight scale up */
+}
+
+.slide-thumbnail-number {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--primary-color); /* Bright primary color for number */
+    flex-shrink: 0;
+    width: 100%; /* Take full width */
+    margin-bottom: 5px; /* Space below number */
+}
+
+.slide-thumbnail-visual-preview {
+    width: calc(100% - 10px); /* Slightly smaller than thumbnail width */
+    height: 60px; /* Fixed height for the miniature slide area */
+    border-radius: 6px; /* Rounded corners for the preview area */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; /* Distribute blocks */
+    align-items: center;
+    padding: 5px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color); /* Subtle inner border */
+    flex-shrink: 0; /* Prevent shrinking */
+    margin-bottom: 8px; /* Space between visual and text content */
+    background-color: var(--slide-background); /* Use slide background for preview */
+}
+
+.mini-title-bar {
+    width: 80%;
+    height: 10px;
+    border-radius: 3px;
+    opacity: 0.8;
+    background-color: var(--title-color); /* Use title color for mini title */
+}
+
+.mini-content-block {
+    width: 90%;
+    height: 7px;
+    border-radius: 2px;
+    opacity: 0.6;
+    background-color: var(--bullet-color); /* Use bullet color for mini content */
+}
+
+
+.slide-thumbnail-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center title and snippet */
+    flex-grow: 1;
+    width: 100%; /* Ensure it takes full width */
+}
+
+.thumbnail-title {
+    font-size: 0.85em; /* Slightly smaller title for compactness */
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-bottom: 3px;
+}
+
+.thumbnail-content-snippet {
+    font-size: 0.7em; /* Smaller font for snippet */
+    color: var(--light-text-color);
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Show only 1 line for snippet */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    line-height: 1.2;
+}
+
+/* Main content area for slides */
+.main-slides-display-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 950px; /* Slightly wider */
+    min-height: 550px; /* Taller */
+    padding: 30px;
+    background-color: var(--card-background); /* Use card background variable */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow); /* Use theme shadow */
+    backdrop-filter: blur(10px); /* Stronger blur */
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    border: 1px solid var(--border-color); /* Subtle border */
+}
+
+/* Individual Slide Preview Styling (within main-slides-display-area) */
+.slide-preview {
+    background-color: var(--template-background); /* Uses template background */
+    border-radius: var(--border-radius);
+    padding: 40px; /* More padding */
+    box-shadow: var(--template-shadow); /* Uses template shadow */
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: all 0.4s ease; /* Smoother transitions */
+    min-height: 500px; /* Taller slides */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 850px; /* Wider slides */
+    border: 1px solid var(--template-border); /* Template border */
+}
+
+.slide-preview:hover {
+    transform: translateY(-8px) scale(1.01); /* More pronounced lift and slight scale */
+    box-shadow: 0 15px 45px var(--shadow-color); /* Use theme shadow */
+}
+
+/* SlidePreview h2, ul, li, span.bullet-icon will be styled by SlidePreview.css using template variables */
+
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+/* Download Button Group */
+.download-buttons-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between buttons */
+    margin-top: 40px; /* More space */
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+/* Download PDF Button */
+.download-button {
+    padding: 16px 35px; /* Larger buttons */
+    background: linear-gradient(45deg, var(--button-gradient-start), var(--button-gradient-end));
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.2em; /* Larger font for buttons */
+    font-weight: 700; /* Bolder text */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px var(--shadow-color); /* Deeper shadow */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.download-button:hover {
+    background: linear-gradient(45deg, var(--button-hover-gradient-start), var(--button-hover-gradient-end));
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+.download-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+.download-button:disabled {
+    background: #444;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* NEW: Style for the Download JSON button (PPT Data) */
+.download-json-button {
+    background: linear-gradient(45deg, #FFD700, #FFA500); /* Gold/Orange gradient (can keep specific or make theme-based) */
+    color: #333; /* Dark text for contrast */
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); /* Yellowish shadow */
+}
+
+.download-json-button:hover {
+    background: linear-gradient(45deg, #FFC700, #FF8C00);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .app {
+        padding: 30px 15px;
+    }
+    h1 {
+        font-size: 2.8em;
+        margin-bottom: 30px;
+    }
+    .input-group, .template-selection-group, .language-selection-group, .theme-generator-section .input-group { /* Added theme-generator-section .input-group */
+        max-width: 500px;
+        gap: 15px;
+    }
+    input[type="text"], input[type="number"], .template-select, .language-select, .theme-prompt-input, .voice-select { /* ADDED .voice-select */
+        padding: 15px 20px;
+        font-size: 1em; /* Adjusted for smaller screens */
+    }
+    button {
+        padding: 14px 30px;
+        font-size: 1.1em;
+    }
+    /* Adjusted for tablet landscape */
+    .slides-display-wrapper {
+        align-items: stretch; /* Ensure children stretch on smaller screens too */
+    }
+    .main-slides-display-area {
+        min-height: 450px;
+        padding: 20px;
+    }
+    .slide-preview {
+        padding: 30px;
+        min-height: 400px;
+    }
+    /* .slide-preview h2, .slide-content-list, .bullet-icon will be handled by SlidePreview.css */
+    .download-buttons-group {
+        flex-direction: column; /* Stack buttons on smaller screens */
+        align-items: center;
+        gap: 15px; /* Space between stacked buttons */
+    }
+    /* Ensure no extra margin when buttons are stacked vertically */
+    .download-json-button {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2em;
+        margin-bottom: 25px;
+    }
+    .input-group {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .input-group .topic-input,
+    .input-group .num-slides-input {
+        width: 100%;
+    }
+    .slides-display-wrapper {
+        flex-direction: column; /* Stack columns on small screens */
+        gap: 25px;
+        height: auto; /* Allow height to be auto when stacked */
+        min-height: unset;
+        align-items: center; /* Center items when stacked */
+    }
+    .slide-navigator-sidebar {
+        width: 100%; /* Full width for sidebar on small screens */
+        height: auto; /* Allow height to be auto when stacked */
+        flex-direction: row; /* Display thumbnails horizontally on small screens */
+        overflow-x: auto; /* Enable horizontal scrolling for thumbnails */
+        padding-bottom: 15px; /* Add padding for scrollbar */
+        scroll-snap-type: x mandatory; /* Snap thumbnails */
+        justify-content: flex-start; /* Align thumbnails to start */
+        padding: 10px;
+    }
+    .slide-thumbnail {
+        flex-shrink: 0;
+        width: 120px; /* Slightly larger fixed width for small screen thumbnails */
+        height: 120px; /* Make it square */
+        scroll-snap-align: center;
+        flex-direction: column; /* Stack number and content vertically */
+        justify-content: center;
+        gap: 5px;
+        padding: 8px;
+    }
+    .slide-thumbnail-number {
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+    .thumbnail-title {
+        font-size: 0.8em;
+        text-align: center;
+    }
+    .thumbnail-content-snippet {
+        display: none; /* Hide snippet on very small screens for compactness */
+    }
+    .main-slides-display-area {
+        width: 100%;
+        min-height: 380px;
+        padding: 15px;
+        height: auto; /* Allow height to be auto when stacked */
+    }
+    .slide-preview {
+        padding: 25px;
+        min-height: 350px;
+    }
+    /* .slide-preview h2, .slide-content-list, .bullet-icon will be handled by SlidePreview.css */
+    .suggested-themes-grid {
+        grid-template-columns: 1fr; /* Stack themes vertically on small screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .app {
+        padding: 20px 10px;
+    }
+    h1 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    input[type="text"], input[type="number"], .template-select, .language-select, button, .theme-prompt-input, .voice-select { /* ADDED .voice-select */
+        font-size: 0.9em;
+        padding: 12px 15px;
+    }
+    .slide-thumbnail {
+        width: 100px;
+        height: 100px;
+    }
+    .slide-thumbnail-visual-preview {
+        height: 40px;
+    }
+    .slide-thumbnail-number {
+        font-size: 0.9em;
+    }
+    .thumbnail-title {
+        font-size: 0.7em;
+    }
+    .thumbnail-content-snippet {
+        display: none; /* Hide snippet on very small screens for compactness */
+    }
+}
+
+/* Copy Button Styling (inside SlidePreview) */
+.copy-button {
+    position: absolute;
+    bottom: 20px; /* Position at the bottom */
+    right: 20px; /* Position at the right */
+    padding: 10px 15px; /* Smaller padding */
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); /* Use theme variables */
+    color: var(--text-color); /* Use theme variable */
+    border-radius: 8px; /* Slightly less rounded */
+    font-size: 0.9em; /* Smaller font */
+    font-weight: 600;
+    box-shadow: 0 4px 10px var(--shadow-color); /* Use theme variable */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: none; /* No uppercase */
+}
+
+.copy-button:hover {
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); /* Use theme variables */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px var(--shadow-color); /* Use theme variable */
+}
+
+.copy-button svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor; /* Use text color for the icon */
+}
+
+.copy-tooltip {
+    position: absolute;
+    bottom: 100%; /* Position above the button */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-background); /* Use theme variable */
+    color: var(--text-color); /* Use theme variable */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none; /* Allow clicks to pass through */
+    margin-bottom: 5px; /* Space between button and tooltip */
+}
+
+.copy-button:hover .copy-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Custom Modal Styling */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it's on top */
+}
+
+.custom-modal-content {
+    background-color: var(--card-background);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    max-width: 450px; /* Wider modal */
+    width: 90%;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transform: scale(0.95);
+    opacity: 0;
+    animation: modal-pop-in 0.3s forwards ease-out;
+}
+
+@keyframes modal-pop-in {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.custom-modal-content h3 {
+    font-size: 1.6em; /* Larger message */
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.custom-modal-content input[type="text"] {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    font-size: 1em;
+    width: calc(100% - 30px); /* Adjust for padding */
+    border: 1px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+.custom-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between buttons */
+    margin-top: 20px;
+}
+
+.custom-modal-buttons button {
+    padding: 10px 25px; /* Smaller modal buttons */
+    font-size: 1em;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0; /* Override app button margin */
+}
+
+.custom-modal-buttons button.confirm-button {
+    background: linear-gradient(45deg, var(--accent-color), #218838); /* Green for confirm */
+}
+.custom-modal-buttons button.confirm-button:hover {
+    background: linear-gradient(45deg, #218838, #1E7E34);
+}
+
+.custom-modal-buttons button.cancel-button {
+    background: linear-gradient(45deg, #DC3545, #C82333); /* Red for cancel */
+}
+.custom-modal-buttons button.cancel-button:hover {
+    background: linear-gradient(45deg, #C82333, #BD2130);
+}
+
+/* Error specific styling for modal */
+.custom-modal-content.error h3 {
+    color: var(--accent-color); /* Use accent color for error messages */
+}
+
+/* Info specific styling for modal */
+.custom-modal-content.info h3 {
+    color: var(--primary-color); /* Use primary color for info messages */
+}
+
+/* Confirm specific styling for modal */
+.custom-modal-content.confirm h3 {
+    color: var(--secondary-color); /* Use secondary color for confirm messages */
+}
+
+/* Prompt specific styling for modal */
+.custom-modal-content.prompt h3 {
+    color: var(--primary-color);
+}
+
+/* NEW STYLES FOR ACCENT SHAPES */
+.accent-corner-shape {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px; /* Adjust size as needed */
+    height: 100px; /* Adjust size as needed */
+    background-color: var(--template-accent-shape-color); /* Uses the specific accent color */
+    border-bottom-left-radius: var(--border-radius);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    z-index: 10; /* Ensure it's above other content but below text */
+}
+
+/* Adjustments for smaller screens */
+@media (max-width: 768px) {
+    .accent-corner-shape {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .accent-corner-shape {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Styles for Mode Selection Buttons */
+.mode-selection-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.mode-button {
+    padding: 10px 20px;
+    border: 2px solid var(--secondary-color);
+    border-radius: var(--border-radius);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.mode-button:hover {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.mode-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--background-color);
+    font-weight: bold;
+}
+
+.mode-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Styles for editable inputs in SlidePreview */
+.editable-title-input,
+.editable-content-textarea,
+.editable-image-prompt-input {
+    width: calc(100% - 20px); /* Adjust for padding */
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color); /* Use theme variable */
+    border-radius: var(--border-radius-small);
+    background-color: var(--input-bg); /* Use theme variable */
+    color: var(--text-color); /* Use theme variable */
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box; /* Include padding in width */
+    resize: vertical; /* Allow vertical resizing for textarea */
+}
+
+.editable-title-input {
+    font-size: 2.5em; /* Match h2 size */
+    font-weight: 800;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--border-color); /* Use h2 border */
+    background-color: transparent; /* Keep background transparent */
+}
+
+.editable-content-textarea {
+    min-height: 150px;
+    font-size: 1.2em;
+    line-height: 1.5;
+}
+
+.editable-image-prompt-input {
+    font-size: 1em;
+    margin-top: 10px; /* Add some space above it */
+}
+
+/* Disable navigation/download buttons when editing */
+.download-buttons-group button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Ensure SlideThumbnail also reflects editing state (optional but good for consistency) */
+.slide-thumbnail.editing {
+    border: 2px dashed var(--primary-color);
+}
+
+/* Styles for PPT SUMMARY SECTION */
+.ppt-summary-section {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 30px;
+  margin-top: 40px;
+  width: 100%;
+  max-width: 950px; /* Match main slide area width */
+  text-align: left;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.ppt-summary-section h2 {
+  color: var(--primary-color);
+  font-size: 2em;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 0 0 10px var(--primary-color); /* Use primary color for text shadow */
+  border-bottom: 2px solid var(--secondary-color);
+  padding-bottom: 10px;
+}
+
+.ppt-summary-section p {
+  color: var(--text-color);
+  font-size: 1.1em;
+  line-height: 1.8;
+  margin-bottom: 25px;
+  white-space: pre-wrap; /* Preserve line breaks from AI response */
+}
+
+.ppt-summary-section .close-summary-button {
+  background: linear-gradient(45deg, var(--accent-color), #DC3545); /* Red for close button */
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: block; /* Make it a block element */
+  margin: 0 auto; /* Center the button */
+}
+
+.ppt-summary-section .close-summary-button:hover {
+  background: linear-gradient(45deg, #C82333, #BD2130);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments for summary section */
+@media (max-width: 768px) {
+  .ppt-summary-section {
+    padding: 20px;
+    margin-top: 30px;
+  }
+  .ppt-summary-section h2 {
+    font-size: 1.6em;
+  }
+  .ppt-summary-section p {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .ppt-summary-section {
+    padding: 15px;
+    margin-top: 20px;
+  }
+  .ppt-summary-section h2 {
+    font-size: 1.4em;
+  }
+  .ppt-summary-section p {
+    font-size: 0.9em;
+  }
+  .ppt-summary-section .close-summary-button {
+    padding: 8px 15px;
+    font-size: 0.9em;
+  }
+}
