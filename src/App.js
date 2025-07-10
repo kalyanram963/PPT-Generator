@@ -1,4 +1,4 @@
-/* global __firebase_config, __initial_auth_token, __app_id, firebase, jsPDF, html2canvas, PptxGenJS */
+/* global __firebase_config, __initial_auth_token, __app_id, firebase */
 import React, { useState, useEffect, useRef } from "react";
 import "./styles/App.css";
 import "./styles/animations.css";
@@ -8,7 +8,7 @@ import "./styles/WelcomePage.css";
 import SlidePreview from "./components/SlidePreview";
 import SlideThumbnail from "./components/SlideThumbnail";
 import Loader from "./components/Loader";
-import templates from "./components/templates";
+import templates from "./components/templates"; // Ensure this import is correct and templates.js exists
 import CustomModal from "./components/CustomModal";
 import WelcomePage from "./components/WelcomePage";
 
@@ -44,7 +44,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [numSlides, setNumSlides] = useState(5);
   const [selectedTemplateId, setSelectedTemplateId] = useState(
-    templates && templates.length > 0 ? templates[0].id : ''
+    // Ensure templates is an array before accessing its length or elements
+    Array.isArray(templates) && templates.length > 0 ? templates[0].id : ''
   );
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [mode, setMode] = useState('auto-generate');
@@ -61,6 +62,7 @@ function App() {
   const [selectedVoice, setSelectedVoice] = useState(null);
 
   const [db, setDb] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [auth, setAuth] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -73,7 +75,9 @@ function App() {
 
   const mainSlidesDisplayAreaRef = useRef(null);
 
-  const activeTemplate = templates.find(t => t.id === selectedTemplateId);
+  // Ensure activeTemplate is derived safely
+  const activeTemplate = Array.isArray(templates) ? templates.find(t => t.id === selectedTemplateId) : null;
+
 
   const showCustomModal = (message, type = 'info', callback = null, initialValue = '') => {
     setModalMessage(message);
@@ -165,15 +169,14 @@ function App() {
   useEffect(() => {
     const initializeFirebase = async () => {
       try {
-        let appInstance;
-        if (typeof firebase !== 'undefined' && firebase.apps.length) {
-          appInstance = firebase.app();
-        } else {
-          appInstance = initializeApp(firebaseConfig);
-        }
+        // ALWAYS initialize a new app instance directly using the modular SDK
+        const appInstance = initializeApp(firebaseConfig);
+        console.log("Firebase app initialized:", appInstance); // Debugging line
 
         const firestoreDb = getFirestore(appInstance);
         const firebaseAuth = getAuth(appInstance);
+        console.log("Firestore DB instance:", firestoreDb); // Debugging line
+        console.log("Firebase Auth instance:", firebaseAuth); // Debugging line
 
         setDb(firestoreDb);
         setAuth(firebaseAuth);
@@ -182,15 +185,19 @@ function App() {
           if (user) {
             setUserId(user.uid);
             setIsAuthReady(true);
+            console.log("User signed in:", user.uid); // Debugging line
           } else {
+            console.log("No user signed in. Attempting anonymous or custom token sign-in."); // Debugging line
             try {
               if (initialAuthToken) {
                 await signInWithCustomToken(firebaseAuth, initialAuthToken);
+                console.log("Signed in with custom token."); // Debugging line
               } else {
                 await signInAnonymously(firebaseAuth);
+                console.log("Signed in anonymously."); // Debugging line
               }
             } catch (error) {
-              console.error("Error during Firebase sign-in:", error);
+              console.error("Error during Firebase sign-in/auth state change:", error); // More specific logging
               if (error.code === 'auth/configuration-not-found' || error.code === 'auth/unauthorized-domain') {
                 showCustomModal(
                   `Firebase Error: ${error.message}. Please ensure Firebase Authentication is enabled and ` +
@@ -209,16 +216,18 @@ function App() {
           }
         });
       } catch (error) {
-        console.error("Error initializing Firebase:", error);
+        console.error("Error initializing Firebase App or Firestore:", error); // More specific logging
         showCustomModal(`Error initializing Firebase: ${error.message}`, 'error');
       }
     };
 
     initializeFirebase();
-  }, []);
+  }, []); // Empty dependency array means it runs once on mount.
 
   useEffect(() => {
     if (db && userId && isAuthReady) {
+      console.log("DB, UserID, AuthReady are set. Proceeding with Firestore operations."); // Debugging line
+      console.log("Current DB object for collection:", db); // Debugging line
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
       const q = query(slidesCollectionRef);
 
@@ -231,7 +240,7 @@ function App() {
               { id: 'bullets-' + doc.id, type: 'bullet-points', content: Array.isArray(data.content) ? data.content : (data.content ? String(data.content).split('\n') : []), x: '10%', y: '20%', width: '80%', height: 'auto' },
             ];
             if (data.imageUrl) {
-              defaultElements.push({ id: 'image-' + doc.id, type: 'image', imagePrompt: data.imagePrompt || "", src: data.imageUrl, x: '5%', y: '45%', width: '90%', height: '45%' });
+              defaultElements.push({ id: 'image-' + doc.id, type: 'image', imagePrompt: data.imagePrompt || "", src: null, x: '5%', y: '45%', width: '90%', height: '45%' });
             }
             return {
               id: doc.id,
@@ -258,10 +267,13 @@ function App() {
       });
 
       return () => unsubscribe();
+    } else {
+        console.log("Firestore not ready yet for snapshot listener. db:", db, "userId:", userId, "isAuthReady:", isAuthReady); // Debugging line
     }
   }, [db, userId, isAuthReady, currentSlideIndex]);
 
   useEffect(() => {
+    // Only apply styles if activeTemplate is not null
     if (activeTemplate && activeTemplate.colors) {
       for (const key in activeTemplate.colors) {
         document.documentElement.style.setProperty(key, activeTemplate.colors[key]);
@@ -391,6 +403,7 @@ function App() {
       await clearAllSlides();
 
       const slidesToProcess = [];
+      console.log("Adding new slides to Firestore. DB:", db, "UserID:", userId); // Debugging line
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
 
       for (const slide of parsedSlides) {
@@ -651,6 +664,7 @@ function App() {
 
   const clearAllSlides = async () => {
     if (db && userId) {
+      console.log("Clearing all slides from Firestore. DB:", db, "UserID:", userId); // Debugging line
       try {
         const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
         const q = query(slidesCollectionRef);
@@ -666,6 +680,8 @@ function App() {
         console.error("Error clearing previous slides:", error);
         showCustomModal(`Error clearing previous slides: ${error.message}`, 'error');
       }
+    } else {
+        console.log("Cannot clear slides: DB or UserID not ready. DB:", db, "UserID:", userId); // Debugging line
     }
   };
 
@@ -816,7 +832,7 @@ function App() {
                   color: getStyleValue(activeTemplate.colors['--template-accent'])
                 });
                 const textSpan = document.createElement('span');
-                textSpan.textContent = point.replace(/^[\s\-\*\•]+\s*/, '');
+                textSpan.textContent = point.replace(/[\s\-\*\•]+\s*/, '');
                 listItem.appendChild(bulletIcon);
                 listItem.appendChild(textSpan);
                 elementHtml.appendChild(listItem);
@@ -854,8 +870,8 @@ function App() {
           useCORS: true,
           logging: false,
           backgroundColor: tempSlideElement.style.backgroundColor || 'white',
-          windowWidth: tempSlideElement.scrollWidth,
-          windowHeight: tempSlideElement.scrollHeight
+          windowWidth: tempContainer.scrollWidth,
+          windowHeight: tempContainer.scrollHeight
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -1038,7 +1054,7 @@ const exportToPPTX = async () => {
                   color: getStyleValue(activeTemplate.colors['--template-accent'])
                 });
                 const textSpan = document.createElement('span');
-                textSpan.textContent = point.replace(/^[\s\-\*\•]+\s*/, '');
+                textSpan.textContent = point.replace(/[\s\-\*\•]+\s*/, '');
                 listItem.appendChild(bulletIcon);
                 listItem.appendChild(textSpan);
                 elementHtml.appendChild(listItem);
@@ -1076,8 +1092,8 @@ const exportToPPTX = async () => {
           useCORS: true,
           logging: false,
           backgroundColor: tempSlideElement.style.backgroundColor || 'white',
-          windowWidth: tempSlideElement.scrollWidth,
-          windowHeight: tempSlideElement.scrollHeight
+          windowWidth: tempContainer.scrollWidth,
+          windowHeight: tempContainer.scrollHeight
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -1104,11 +1120,13 @@ const exportToPPTX = async () => {
 
   const addNewSlide = async () => {
     if (!db || !userId) {
+      console.error("addNewSlide called but db or userId is null. db:", db, "userId:", userId); // Debugging line
       showCustomModal("Firebase is not ready. Please wait or check your connection.", 'error');
       return;
     }
     setLoading(true);
     try {
+      console.log("Adding new slide to Firestore. DB:", db, "UserID:", userId); // Debugging line
       const slidesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/slides`);
       const newSlideData = {
         elements: [
@@ -1143,11 +1161,13 @@ const exportToPPTX = async () => {
 
   const saveSlideChanges = async () => {
     if (!editingSlideId || !db || !userId) {
+      console.error("saveSlideChanges called but editingSlideId, db or userId is null. editingSlideId:", editingSlideId, "db:", db, "userId:", userId); // Debugging line
       showCustomModal("No slide is currently being edited or Firebase is not ready.", 'error');
       return;
     }
     setLoading(true);
     try {
+      console.log("Saving slide changes to Firestore. DB:", db, "UserID:", userId, "Slide ID:", editingSlideId); // Debugging line
       await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/slides`, editingSlideId), {
         elements: tempSlideElements,
       });
@@ -1171,6 +1191,7 @@ const exportToPPTX = async () => {
     showCustomModal("Are you sure you want to delete this slide?", 'confirm', async (confirmed) => {
       if (confirmed) {
         if (db && userId) {
+          console.log("Deleting slide from Firestore. DB:", db, "UserID:", userId, "Slide ID:", slideId); // Debugging line
           try {
             await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/slides`, slideId));
             showCustomModal('Slide deleted successfully!', 'info');
@@ -1181,6 +1202,8 @@ const exportToPPTX = async () => {
             console.error("Error deleting slide:", error);
             showCustomModal(`Error deleting slide: ${error.message}`, 'error');
           }
+        } else {
+            console.log("Cannot delete slide: DB or UserID not ready. DB:", db, "UserID:", userId); // Debugging line
         }
       }
     });
@@ -1290,7 +1313,7 @@ const exportToPPTX = async () => {
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
                 disabled={loading || editingSlideId !== null || isSpeaking}
               >
-                {templates && templates.length > 0 ? (
+                {Array.isArray(templates) && templates.length > 0 ? (
                   templates.map((template) => (
                     <option key={template.id} value={template.id}>
                       {template.name}
@@ -1338,8 +1361,8 @@ const exportToPPTX = async () => {
                     index={index}
                     currentSlideIndex={currentSlideIndex}
                     setCurrentSlideIndex={setCurrentSlideIndex}
-                    templateStyles={activeTemplate.styles}
-                    templateColors={activeTemplate.colors}
+                    templateStyles={activeTemplate?.styles}
+                    templateColors={activeTemplate?.colors}
                     onEdit={handleEditSlide}
                     onDelete={handleDeleteSlide}
                     isEditing={editingSlideId === slide.id}
@@ -1351,8 +1374,8 @@ const exportToPPTX = async () => {
                 {currentSlide && (
                   <SlidePreview
                     slide={currentSlide}
-                    templateStyles={activeTemplate.styles}
-                    templateColors={activeTemplate.colors}
+                    templateStyles={activeTemplate?.styles}
+                    templateColors={activeTemplate?.colors}
                     isEditing={editingSlideId === currentSlide.id}
                     onElementChange={handleElementChangeInPreview}
                   />

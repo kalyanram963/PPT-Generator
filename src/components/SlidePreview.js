@@ -123,10 +123,6 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
             onStop: handleDragStop(element.id),
             bounds: 'parent',
             nodeRef: getOrCreateRef(element.id),
-            position: {
-              x: slidePreviewRef.current ? (parseFloat(element.x) / 100 * slidePreviewRef.current.offsetWidth) : 0,
-              y: slidePreviewRef.current ? (parseFloat(element.y) / 100 * slidePreviewRef.current.offsetHeight) : 0,
-            },
           };
 
           let contentComponent = null;
@@ -199,6 +195,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
             >
               <div
                 className={`slide-element slide-${element.type}-element`}
+                ref={getOrCreateRef(element.id)}
                 style={{
                   ...elementStyle,
                   border: '1px dashed #00c9ff',
@@ -234,7 +231,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                   {Array.isArray(contentElement.content) && contentElement.content.map((point, index) => (
                     <li key={index} className="slide-bullet-point">
                       <span className="bullet-icon" style={{ color: accentColor }}>•</span>
-                      {point.replace(/^[\s\-\*\•]+\s*/, '')}
+                      {point.replace(/[\s\-\*\•]+\s*/, '')}
                     </li>
                   ))}
                 </ul>
