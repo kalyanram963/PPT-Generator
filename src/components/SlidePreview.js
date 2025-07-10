@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../components/SlidePreview.css';
+import '../components/SlidePreview.css'; // Ensure this is linked
 import Draggable from 'react-draggable';
 
-const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElementChange }) => {
+const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElementChange, onImageFileChange }) => {
   const [currentElements, setCurrentElements] = useState(slide.elements || []);
   const slidePreviewRef = useRef(null);
   const elementRefs = useRef({});
@@ -20,9 +20,10 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
     return cssVar;
   };
 
-  const slideBackground = getStyleValue(templateStyles?.slideBackground) || '#FFFFFF';
-  const borderColor = getStyleValue(templateStyles?.borderColor) || '#CCCCCC';
-  const accentColor = getStyleValue(templateColors?.['--template-accent']) || '#FF6B6B';
+  // These are now derived from the global CSS variables set by App.js
+  const slideBackground = getStyleValue('--slide-background') || '#FFFFFF';
+  const borderColor = getStyleValue('--border-color') || '#CCCCCC';
+  const accentColor = getStyleValue('--accent-color') || '#FF6B6B';
   const borderRadius = getStyleValue('--border-radius') || '10px';
   const boxShadow = getStyleValue('--box-shadow') || '0 4px 8px rgba(0, 0, 0, 0.1)';
 
@@ -82,6 +83,16 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
     });
   };
 
+  // Handler for file input change
+  const handleFileInputChange = (elementId, event) => {
+    const file = event.target.files[0];
+    if (onImageFileChange) {
+      // Call the onImageFileChange prop directly from SlidePreview
+      onImageFileChange(elementId, file);
+    }
+  };
+
+
   const getOrCreateRef = (id) => {
     if (!elementRefs.current[id]) {
       elementRefs.current[id] = React.createRef();
@@ -104,7 +115,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
       {templateStyles?.accentShapeColor && (
         <div
           className="accent-corner-shape"
-          style={{ backgroundColor: getStyleValue(templateStyles.accentShapeColor) }}
+          style={{ backgroundColor: getStyleValue('--accent-color') }}
         ></div>
       )}
 
@@ -134,7 +145,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                   value={element.content}
                   onChange={(e) => handleElementChange(element.id, 'content', e.target.value)}
                   className="editable-title-input"
-                  style={{ color: getStyleValue(templateStyles?.titleColor) || '#000000', borderBottom: `3px solid ${getStyleValue(templateStyles?.borderColor) || '#CCCCCC'}`, width: '100%', height: 'auto' }}
+                  style={{ color: getStyleValue('--primary-color') || '#000000', borderBottom: `3px solid ${getStyleValue('--secondary-color') || '#CCCCCC'}`, width: '100%', height: 'auto' }}
                 />
               );
               break;
@@ -144,7 +155,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                   value={element.content}
                   onChange={(e) => handleElementChange(element.id, 'content', e.target.value)}
                   className="editable-content-textarea"
-                  style={{ color: getStyleValue(templateStyles?.bulletColor) || '#363636', width: '100%', height: 'auto' }}
+                  style={{ color: getStyleValue('--text-color') || '#363636', width: '100%', height: 'auto' }}
                 />
               );
               break;
@@ -154,7 +165,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                   value={Array.isArray(element.content) ? element.content.join('\n') : element.content}
                   onChange={(e) => handleElementChange(element.id, 'content', e.target.value.split('\n'))}
                   className="editable-content-textarea"
-                  style={{ color: getStyleValue(templateStyles?.bulletColor) || '#363636', width: '100%', height: 'auto' }}
+                  style={{ color: getStyleValue('--text-color') || '#363636', width: '100%', height: 'auto' }}
                 />
               );
               break;
@@ -167,7 +178,14 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                     onChange={(e) => handleElementChange(element.id, 'imagePrompt', e.target.value)}
                     placeholder="Image prompt"
                     className="editable-image-prompt-input"
-                    style={{ color: getStyleValue(templateStyles?.bulletColor) || '#363636', width: '100%', marginBottom: '5px' }}
+                    style={{ color: getStyleValue('--text-color') || '#363636', width: '100%', marginBottom: '5px' }}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileInputChange(element.id, e)} // Call handleFileInputChange here
+                    className="image-upload-input"
+                    style={{ width: '100%', marginBottom: '10px' }}
                   />
                   {element.src && (
                     <img

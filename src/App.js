@@ -1035,17 +1035,17 @@ const exportToPPTX = async () => {
               color: getStyleValue(activeTemplate.styles.bulletColor)
             });
             element.content.forEach(point => {
-              const listItem = document.createElement('li');
-              listItem.className = 'slide-bullet-point';
-              Object.assign(listItem.style, {
-                display: 'flex',
-                alignItems: 'flex-start',
-                marginBottom: '15px',
-              });
-              const bulletIcon = document.createElement('span');
-              bulletIcon.className = 'bullet-icon';
-              bulletIcon.textContent = '•';
-              Object.assign(bulletIcon.style, {
+                const listItem = document.createElement('li');
+                listItem.className = 'slide-bullet-point';
+                Object.assign(listItem.style, {
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  marginBottom: '15px',
+                });
+                const bulletIcon = document.createElement('span');
+                bulletIcon.className = 'bullet-icon';
+                bulletIcon.textContent = '•';
+                Object.assign(bulletIcon.style, {
                   fontSize: '1.8em',
                   marginRight: '15px',
                   lineHeight: '1',
@@ -1157,6 +1157,48 @@ const exportToPPTX = async () => {
 
   const handleElementChangeInPreview = (slideId, updatedElements) => {
     setTempSlideElements(updatedElements);
+  };
+
+  const handleImageFileChange = async (elementId, file) => {
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result; // This is the base64 string
+        console.log(`Image file selected for element ${elementId}. Base64 length: ${base64data.length}`);
+
+        // Find the slide being edited in the main slides array
+        setSlides(prevSlides => {
+          const newSlides = prevSlides.map(slide => {
+            if (slide.id === editingSlideId) { // Use editingSlideId to find the correct slide
+              const updatedElements = slide.elements.map(el =>
+                el.id === elementId ? { ...el, src: base64data } : el
+              );
+              return { ...slide, elements: updatedElements };
+            }
+            return slide;
+          });
+          return newSlides;
+        });
+
+        // Also update tempSlideElements for immediate preview feedback
+        setTempSlideElements(prevTempElements => {
+          return prevTempElements.map(el =>
+            el.id === elementId ? { ...el, src: base64data } : el
+          );
+        });
+
+        showCustomModal('Image uploaded successfully to preview. Remember to Save Changes!', 'info');
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error handling image file change:", error);
+      showCustomModal(`Failed to load image: ${error.message}`, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const saveSlideChanges = async () => {
@@ -1378,6 +1420,7 @@ const exportToPPTX = async () => {
                     templateColors={activeTemplate?.colors}
                     isEditing={editingSlideId === currentSlide.id}
                     onElementChange={handleElementChangeInPreview}
+                    onImageFileChange={handleImageFileChange} // Pass the new handler
                   />
                 )}
               </div>

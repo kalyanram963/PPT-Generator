@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -53,6 +56,7 @@
   "devDependencies": {
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
+    "cross-env": "^7.0.3",
     "crypto-browserify": "^3.12.1",
     "https-browserify": "^1.0.0",
     "os-browserify": "^0.3.0",
@@ -60,7 +64,6 @@
     "react-app-rewired": "^2.2.1",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "url": "^0.11.4",
-    "cross-env": "^7.0.3"
+    "url": "^0.11.4"
   }
 }
