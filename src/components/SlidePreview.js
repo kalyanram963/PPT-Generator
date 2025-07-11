@@ -8,6 +8,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
   const elementRefs = useRef({});
 
   useEffect(() => {
+    // Ensure currentElements is always an array, even if slide.elements is null/undefined
     setCurrentElements(slide.elements || []);
     elementRefs.current = {};
   }, [slide.elements]);
@@ -187,7 +188,8 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
                     className="image-upload-input"
                     style={{ width: '100%', marginBottom: '10px' }}
                   />
-                  {element.src && (
+                  {/* Ensure element.src is a string before rendering */}
+                  {element.src && typeof element.src === 'string' && (
                     <img
                       src={element.src}
                       alt={element.imagePrompt || 'Slide Image'}
@@ -263,7 +265,7 @@ const SlidePreview = ({ slide, templateStyles, templateColors, isEditing, onElem
             </div>
           )}
 
-          {imageElement && imageElement.src && (
+          {imageElement && imageElement.src && typeof imageElement.src === 'string' && (
             <div className="slide-element slide-image-element">
               <img
                 src={imageElement.src}

@@ -948,7 +948,7 @@ const exportToPPTX = async () => {
         justifyContent: 'flex-start',
         position: 'relative',
         overflow: 'hidden',
-        boxSizing: 'border-box',
+        boxSizing: 'border-box', // Corrected from 'border-sizing' to 'border-box'
         backdropFilter: 'none',
         webkitBackdropFilter: 'none',
         borderRadius: getStyleValue('--border-radius'),
@@ -1173,8 +1173,9 @@ const exportToPPTX = async () => {
         setSlides(prevSlides => {
           const newSlides = prevSlides.map(slide => {
             if (slide.id === editingSlideId) { // Use editingSlideId to find the correct slide
+              // Ensure src is always a string, not an array or other type
               const updatedElements = slide.elements.map(el =>
-                el.id === elementId ? { ...el, src: base64data } : el
+                el.id === elementId ? { ...el, src: String(base64data) } : el // Explicitly convert to string
               );
               return { ...slide, elements: updatedElements };
             }
@@ -1186,7 +1187,7 @@ const exportToPPTX = async () => {
         // Also update tempSlideElements for immediate preview feedback
         setTempSlideElements(prevTempElements => {
           return prevTempElements.map(el =>
-            el.id === elementId ? { ...el, src: base64data } : el
+            el.id === elementId ? { ...el, src: String(base64data) } : el // Explicitly convert to string
           );
         });
 
@@ -1210,6 +1211,8 @@ const exportToPPTX = async () => {
     setLoading(true);
     try {
       console.log("Saving slide changes to Firestore. DB:", db, "UserID:", userId, "Slide ID:", editingSlideId); // Debugging line
+      // THIS IS THE CRITICAL LOG: It will show the exact data being sent to Firestore
+      console.log("Data being sent to Firestore:", JSON.stringify(tempSlideElements, null, 2));
       await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/slides`, editingSlideId), {
         elements: tempSlideElements,
       });

@@ -4,19 +4,7 @@ import '../styles/WelcomePage.css'; // Import the new CSS file
 const WelcomePage = ({ onGetStarted }) => {
   return (
     <div className="welcome-page">
-      {/* Video Background Element - ONLY for Welcome Page */}
-      <div className="welcome-video-background">
-        <video autoPlay loop muted playsInline>
-          {/* Main MP4 source */}
-          <source src="/videos/animation.mp4" type="video/mp4" />
-          {/* IMPORTANT: Add a WebM fallback for broader browser compatibility */}
-          <source src="/videos/animation.webm" type="video/webm" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      {/* This div acts as the semi-transparent overlay */}
-      <div className="welcome-page-overlay"></div>
+      {/* The video background and its overlay have been removed from here */}
 
       <div className="welcome-content">
         <h1 className="welcome-title">Welcome to AI PPT Generator!</h1>
